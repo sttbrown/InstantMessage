@@ -22,7 +22,7 @@ namespace InstantMessage.Models
         //public DateTime Sent { get; set; }
 
         //a message belongs to a single user
-        public int UserID { get; set; }
+        public string UserID { get; set; }
         public virtual User User { get; set; }
 
         //a message belongs to a single Conversation

@@ -288,6 +288,9 @@
     <Content Include="Views\Conversations\Details.cshtml" />
     <Content Include="Views\Conversations\Edit.cshtml" />
     <Content Include="Views\Conversations\Index.cshtml" />
+    <Content Include="Views\Home\TestHome.cshtml" />
+    <Content Include="Views\Home\NewUser.cshtml" />
+    <Content Include="Views\Home\CreateConversation.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

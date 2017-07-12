@@ -13,8 +13,8 @@ namespace InstantMessage.DAL
         {
             var user = new List<User>
             {
-                new User{UserID=1,UserName="GiantSteps", FirstName="John", LastName="Coltrane"},
-                new User{UserID=2,UserName="BirthOfCool", FirstName="Miles", LastName="Davis"},
+                new User{UserID="1",UserName="GiantSteps", FirstName="John", LastName="Coltrane"},
+                new User{UserID="2",UserName="BirthOfCool", FirstName="Miles", LastName="Davis"},
 
             };
 
@@ -34,8 +34,8 @@ namespace InstantMessage.DAL
 
             var messages = new List<Message>
             {
-            new Message{MessageID= 1, Content="Charlie is the finest horn player", UserID = 1, ConversationID= 1 },
-            new Message{MessageID= 2, Content="what you mean Bird?", UserID = 2, ConversationID= 2 },
+            new Message{MessageID= 1, Content="Charlie is the finest horn player", UserID = "1", ConversationID= 1 },
+            new Message{MessageID= 2, Content="what you mean Bird?", UserID = "2", ConversationID= 2 },
             };
             messages.ForEach(m => context.Messages.Add(m));
             context.SaveChanges();

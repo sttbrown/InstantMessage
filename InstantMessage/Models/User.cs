@@ -13,8 +13,15 @@ namespace InstantMessage.Models
             this.Messages = new List<Message>();
         }
 
-        public int UserID { get; set; }
+        public User(string newUser) //from google authentication
+        {
+            this.UserID = newUser;
+            this.Conversations = new List<Conversation>();
+            this.Messages = new List<Message>();
+
+        }
         public string UserName { get; set; }
+        public string UserID { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
