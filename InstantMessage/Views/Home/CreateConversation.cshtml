@@ -24,8 +24,12 @@
             <td>
                 @Html.DisplayFor(modelItem => item.UserID)
             </td>
+            <td>
+                @Html.ActionLink("Select", "Conversation",new {id = item.UserID })
+            </td>
            
         </tr>
+
     }
 </table>
 

@@ -24,8 +24,8 @@ namespace InstantMessage.Models
         public string UserID { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-
-
+   
+        public ICollection<Connection> Connections { get; set; }
         public virtual ICollection<Conversation> Conversations { get; set; }
         public virtual ICollection<Message> Messages { get; set; }
 

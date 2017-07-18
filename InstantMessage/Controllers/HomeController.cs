@@ -6,42 +6,33 @@ using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using InstantMessage.DAL;
+using System.Net;
 
 namespace InstantMessage.Controllers
 {   
     [RequireHttps]
     public class HomeController : Controller
     {
+        
+       // private InstantMessageContext Data = new InstantMessageContext();
 
-        private InstantMessageContext Data = new InstantMessageContext();
+        private DataRepository _repo = new DataRepository();
+
+        private string AuthenticatedUser = System.Web.HttpContext.Current.GetOwinContext()
+            .Authentication.User.Identity.GetUserId();
+
+        private User CurrentUser;
+
+        public HomeController()
+        {
+
+        }
 
         public ActionResult Index()
         {
+
+
             return View();
-        }
-
-        [Authorize]
-        public ActionResult CreateConversation()
-        {
-            //All Users ,  way of selecting user - should this bring up modal or new page Post Datas?
-
-            //Have a selected user , Create new conversation, add user into many-to-many table.
-
-            //messages all allocated conversation ID 
-
-            List<User> all = Data.Users.ToList();
-            List<User> contacts = new List<User>();
-
-            foreach (User u in all)
-            {
-                if (u.UserID != System.Web.HttpContext.Current.GetOwinContext().
-                    Authentication.User.Identity.GetUserId())
-                {
-                    contacts.Add(u);
-                }
-            }
-
-            return View(contacts);
         }
 
 
@@ -51,49 +42,71 @@ namespace InstantMessage.Controllers
             //check if user already exists
             String current = System.Web.HttpContext.Current.GetOwinContext().Authentication.User.Identity.GetUserId();
 
-            System.Console.WriteLine("Hello, "+ current );
+            CurrentUser = _repo.getCurrentUser(current);
 
-            User user = Data.Users.Find(current);
-
-            if (user == null)
+            if (CurrentUser == null)
             {
-                user = new User(current);
-                Data.Users.Add(user);
-                Data.SaveChanges(); 
+                _repo.createNewUser(current);
+
                 return View("NewUser");
             }
             else
             {
-                //List<Conversation> Conversations = data.Conversations.Where<>
-                // Where(l => l.Courses.Select(c => c.CourseId).Contains(courseId)
+                //return users conversations. 
 
-                List<Conversation> conver = new List<Conversation>();
+                List<Conversation> conversations = _repo.getAllConversations(CurrentUser);
 
-                try
-                {
-                    conver = Data.Conversations.ToList();
-                }
-                catch (ArgumentNullException e)
+                if (conversations == null)
                 {
                     Console.WriteLine("no conversations available");
                     return View("NewUser");
                 }
 
-                List<Conversation> userCon = new List<Conversation>();
+                return View(conversations);
+            }
+        }
 
-                    foreach (Conversation c in conver)
-                    {
-                        if (c.Users.Contains(user))
-                        {
-                            userCon.Add(c);
-                        }
-                    }
+        
 
-                return View(userCon);
+        [Authorize]
+        public ActionResult CreateConversation()
+        {
+            //All Users ,  way of selecting user - should this bring up modal or new page Post Datas?
+            //Have a selected user , Create new conversation, add user into many-to-many table.
+            //messages all allocated conversation ID 
+
+           List<User> contacts= _repo.getAllContacts(AuthenticatedUser);
+
+            return View(contacts);
+        }
+
+
+        [Authorize]
+        public ActionResult Conversation(string id)
+        {
+            //this needs to be a POST
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+               
             }
 
+            //start conversation with one other user
+
+            User other = _repo.getContact(id);
             
+            if (other == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            _repo.startConversation(CurrentUser, other);
+ 
+            return View();
         }
+
+
+        
 
         public ActionResult About()
         {

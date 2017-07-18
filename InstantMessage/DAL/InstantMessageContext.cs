@@ -16,6 +16,7 @@ namespace InstantMessage.DAL
         public DbSet<Conversation> Conversations { get; set; }
         //public DbSet<Participant> Participants { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<Connection> Connections { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

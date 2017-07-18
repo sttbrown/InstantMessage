@@ -9,16 +9,9 @@ namespace InstantMessage
         public void Configuration(IAppBuilder app)
         {
             ConfigureAuth(app);
-            
+            app.MapSignalR();
         }
 
-        //private void DeleteUser()
-        //{
-        //    string userName = "stewart.t.brown@gmail.com";
-        //    System.Web.Security.Membership.DeleteUser(userName);
-
-        //    System.Diagnostics.Debug.WriteLine("delete user method complete");
-
-        //}
+     
     }
 }
