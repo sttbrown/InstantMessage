@@ -5,24 +5,92 @@ using InstantMessage.DAL;
 using Microsoft.AspNet.Identity;
 using InstantMessage.Models;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace InstantMessage
 {
-    //authorisation tag here
+    [Authorize]
     public class ChatHub : Hub
     {
-        private DataRepository _Repo;
-        //private string AuthenticatedUser = System.Web.HttpContext.Current.GetOwinContext()
-          //  .Authentication.User.Identity.GetUserId();
+        private static DataRepository _Repo = new DataRepository();
+        private static string AuthenticatedUser;
         private User CurrentUser;
 
+        
         public ChatHub()
         {
-            _Repo = new DataRepository();
-         //   CurrentUser = _Repo.getCurrentUser(AuthenticatedUser);
+
             
+
         }
 
+        private void PersistStateHelper()
+        {
+            AuthenticatedUser = Clients.Caller.UserId;
+            CurrentUser = _Repo.getCurrentUser(AuthenticatedUser);
+        }
+
+
+        public override Task OnConnected()
+        {
+            if (Context.User.Identity.IsAuthenticated)
+            {
+
+                Clients.Caller.UserId = Context.User.Identity.GetUserName();
+                Clients.Caller.initialized();
+
+            }
+            else
+            {
+                Console.WriteLine("problem authenticating");
+                //do something eg return to log-in page?
+            }
+
+            //if (Context.User.Identity.IsAuthenticated)
+            //{
+            //    AuthenticatedUser = Context.User.Identity.GetUserName();
+            //    CurrentUser = _Repo.getCurrentUser(AuthenticatedUser);
+
+            //}
+            //else
+            //{
+            //    Console.WriteLine("problem authenticating");
+            //    //do something eg return to log-in page?
+            //}
+
+            ////
+
+
+
+
+            // EXCEPTION AT TIMES
+            //try
+            //{
+            //    AuthenticatedUser = HttpContext.Current.GetOwinContext()
+            //    .Authentication.User.Identity.GetUserName();
+
+
+            //    var user = Context.User;
+            //    string name = user.Identity.Name;
+
+            //    // AuthenticatedUser = "s.t.t.brown@hotmail.co.uk";
+
+            //    CurrentUser = _Repo.getCurrentUser(AuthenticatedUser);
+
+
+            //    Debug.WriteLine("user.Identity.Name =  " + name);
+            //    Debug.WriteLine("AuthenticatedUser =  " + AuthenticatedUser);
+
+
+            //}
+            //catch
+            //{
+            //    Debug.WriteLine("authentication exception");
+            //}
+
+            return base.OnConnected();
+        }
 
         public void Contacts()
         {
@@ -36,43 +104,15 @@ namespace InstantMessage
         }
 
 
-        public void StartConversation(string otherUser)
-        {
-            User other = _Repo.getContact(otherUser);
-            User user = _Repo.getContact(getThisUserId());
-
-            Conversation newCon = new Conversation();
-            newCon.Users.Add(other);
-            newCon.Users.Add(user);
-
-            //saving should probably not happen until first message sent
-            //may not be feasible.
-            // _Repo.saveChanges();
-            Clients.Caller.ConversationReference(newCon.ConversationID);
-
-
-
-        }
-
-        
-
-        private string getThisUserId()
-        {
-            var user = Context.User;
-            string userId = user.Identity.GetUserId();
-            return userId;
-        }
-
         public List<string> DisplayContacts()
         {
-            var user = Context.User;
-           string name = user.Identity.Name;
+            PersistStateHelper();
 
 
-            List<User> users = _Repo.getAllContacts(name);
+            List<User> users = _Repo.GetAllContacts(AuthenticatedUser);
             List<String> contacts = new List<String>();
 
-            foreach(User u in users)
+            foreach (User u in users)
             {
                 contacts.Add(u.UserID);
             }
@@ -81,40 +121,101 @@ namespace InstantMessage
 
         }
 
-        public void DisplayConversation()
+
+        public void SendFirstMessage(string message, List<string> contacts, string conversationName)
         {
+            Debug.WriteLine(message + "FIRST MESSAGE ");
 
-        }
+            PersistStateHelper();
 
-        public void Send(string name, string message, string conversationID)
-        {
-            var user = Context.User;
-
-            if (user.Identity.IsAuthenticated)
+            if (message != null)
             {
-                name = user.Identity.Name;
-             
+                contacts.Add(AuthenticatedUser);
+                Conversation con = StartConversation(contacts, conversationName);
+
+                Message conversationMessage = _Repo.GenerateMessage(message, CurrentUser, con);
+                UpdateMessageOnClient(conversationMessage);
+
             }
-            else
-            {
-                name = "anonymous";
-            }
-
-            //save to conversation/database
-
-
-
-            //updates all connected clients 
-            Clients.All.addNewMessageToPage(name, message);
         }
 
-
-        public void GetLatestMessages()
+        public void Send(string message, int conversationID)
         {
-            //Could be used to update all clients as they join?
-            //or best to do so from controller?
+            PersistStateHelper();
+
+            if (message != null)
+            {
+                //get Conversation, then call generateMessage
+                Conversation con = _Repo.getConversation(conversationID);
+                Debug.WriteLine(message + "OTHER MESSAGE " + con.ConversationID);
+
+                Message conversationMessage = _Repo.GenerateMessage(message, CurrentUser, con);
+                UpdateMessageOnClient(conversationMessage);
+            }
         }
+
+
+        private void UpdateMessageOnClient(Message conversationMessage)
+        {
+            //    //updates all connected clients 
+            Clients.All.addNewMessageToPage(conversationMessage.User.UserID, conversationMessage.Content);
+
+
+        }
+
+
+        private Conversation StartConversation(List<string> contacts, string conversationName)
+        {
+            List<User> users = _Repo.retrieveUsers(contacts);
+
+            Conversation con = _Repo.startConversation(users, conversationName);
+
+           // con.ConversationID = "Example Conversation";
+            
+            Clients.Caller.ReturnConversationDetails(con.ConversationID);
+            
+            return con;
+        }
+
+
+
+        public void GetAllConversations()
+        {
+            PersistStateHelper();
+
+            List<Conversation> conversations = _Repo.GetAllConversations(CurrentUser);
+
+            int n = conversations.Count;
+          
+           foreach (Conversation c in conversations)
+           {
+                Clients.Caller.AddExistingConversation(c);
+           }
+
+        }
+
+
+
+
+   
+
+    //public override Task OnDisconnected()
+    //{
+    //    // Add your own code here.
+    //    // For example: in a chat application, mark the user as offline, 
+    //    // delete the association between the current connection id and user name.
+    //    return base.OnDisconnected();
+    //}
+
+    //public override Task OnReconnected()
+    //{
+    //    // Add your own code here.
+    //    // For example: in a chat application, you might have marked the
+    //    // user as offline after a period of inactivity; in that case 
+    //    // mark the user as online again.
+    //    return base.OnReconnected();
+    //}
+
 
     }
-
 }

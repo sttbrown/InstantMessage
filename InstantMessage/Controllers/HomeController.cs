@@ -13,13 +13,10 @@ namespace InstantMessage.Controllers
     [RequireHttps]
     public class HomeController : Controller
     {
-        
-       // private InstantMessageContext Data = new InstantMessageContext();
-
         private DataRepository _repo = new DataRepository();
 
         private string AuthenticatedUser = System.Web.HttpContext.Current.GetOwinContext()
-            .Authentication.User.Identity.GetUserId();
+            .Authentication.User.Identity.GetUserName();
 
         private User CurrentUser;
 
@@ -28,19 +25,11 @@ namespace InstantMessage.Controllers
 
         }
 
+        [Authorize]
         public ActionResult Index()
         {
-
-
-            return View();
-        }
-
-
-        [Authorize]
-        public ActionResult TestHome()
-        {
             //check if user already exists
-            String current = System.Web.HttpContext.Current.GetOwinContext().Authentication.User.Identity.GetUserId();
+            String current = System.Web.HttpContext.Current.GetOwinContext().Authentication.User.Identity.GetUserName();
 
             CurrentUser = _repo.getCurrentUser(current);
 
@@ -54,7 +43,45 @@ namespace InstantMessage.Controllers
             {
                 //return users conversations. 
 
-                List<Conversation> conversations = _repo.getAllConversations(CurrentUser);
+                List<Conversation> conversations = _repo.GetAllConversations(CurrentUser);
+
+                if (conversations == null)
+                {
+                    Console.WriteLine("no conversations available");
+                    return View("NewUser");
+                }
+
+                return View("Conversation");
+            }
+        }
+
+
+        [Authorize]
+        public ActionResult Conversation()
+        {
+            return View();
+        }
+
+
+        [Authorize]
+        public ActionResult TestHome()
+        {
+            //check if user already exists
+            String current = System.Web.HttpContext.Current.GetOwinContext().Authentication.User.Identity.GetUserName();
+
+            CurrentUser = _repo.getCurrentUser(current);
+
+            if (CurrentUser == null)
+            {
+                _repo.createNewUser(current);
+
+                return View("NewUser");
+            }
+            else
+            {
+                //return users conversations. 
+
+                List<Conversation> conversations = _repo.GetAllConversations(CurrentUser);
 
                 if (conversations == null)
                 {
@@ -75,35 +102,13 @@ namespace InstantMessage.Controllers
             //Have a selected user , Create new conversation, add user into many-to-many table.
             //messages all allocated conversation ID 
 
-           List<User> contacts= _repo.getAllContacts(AuthenticatedUser);
+           List<User> contacts= _repo.GetAllContacts(AuthenticatedUser);
 
             return View(contacts);
         }
 
 
-        [Authorize]
-        public ActionResult Conversation(string id)
-        {
-            //this needs to be a POST
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-               
-            }
-
-            //start conversation with one other user
-
-            User other = _repo.getContact(id);
-            
-            if (other == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-
-            _repo.startConversation(CurrentUser, other);
- 
-            return View();
-        }
+     
 
 
         

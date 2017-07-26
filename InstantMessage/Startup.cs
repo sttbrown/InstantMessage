@@ -1,4 +1,5 @@
-﻿using Microsoft.Owin;
+﻿using Microsoft.AspNet.SignalR;
+using Microsoft.Owin;
 using Owin;
 
 [assembly: OwinStartupAttribute(typeof(InstantMessage.Startup))]
@@ -10,6 +11,8 @@ namespace InstantMessage
         {
             ConfigureAuth(app);
             app.MapSignalR();
+            GlobalHost.HubPipeline.RequireAuthentication();
+            //ensures no hub methods are accessible to users without authentication
         }
 
      

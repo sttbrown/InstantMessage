@@ -25,187 +25,359 @@
         height: 200px;
         margin: 10px
     }
+    #contact-block {
+        background-color: white;
+        width: 400px;
+    }
+
+   /* The side navigation menu */
+    .sidenav {
+        height: 100%; /* 100% Full-height */
+        width: 0; /* 0 width - change this with JavaScript */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Stay on top */
+        top: 0;
+        left: 0;
+        background-color: #111; /* Black*/
+        overflow-x: hidden; /* Disable horizontal scroll */
+        padding-top: 60px; /* Place content 60px from the top */
+        transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+}
+
+/* The navigation menu links */
+     .sidenav a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        font-size: 25px;
+        color: #818181;
+        display: block;
+        transition: 0.3s
+}
+
+/* When you mouse over the navigation links, change their color */
+     .sidenav a:hover, .offcanvas a:focus{
+        color: #f1f1f1;
+}
+
+/* Position and style the close button (top right corner) */
+     .sidenav .closebtn {
+        position: absolute;
+        top: 20;
+        right: 25px;
+        font-size: 36px;
+        margin-left: 50px;
+}
+
+/* Style page content - use this if you want to push the page content to the right when you open the side navigation */
+     #main {
+        transition: margin-left .5s;
+        padding: 20px;
+}
+
+    /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size)
+  see https://www.w3schools.com/howto/howto_js_sidenav.asp
+*/
+
 </style>
-<h2>Conversation</h2>
 
-<input id="current-conversation" type="hidden"/>
-<input id="UserID" type="hidden" />
-
-
-
-
-<div class="container">
-    <input type="button" id="conversations" value="Show Conversations" />
-    <ul id="conversations"></ul>
-</div>
-
-<div class="container">
-    <input type="button" id="display" value="Display Contacts"/>
-    <ul id="contacts"></ul>
-</div>
-
-<div class="container-fluid">
-    <input type="button" id="select" value="Select Contact" />
-    <select id="contactselect">
-    </select>
-    <input type="button" id="startconversation" value="Start Conversation" />
+<div id="mySidenav" class="sidenav">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <a href="#">New Conversation</a>
 </div>
 
 
-<div class="flex-container">
-    <div class="flex-item" id="contact-name">Conversation with: </div>
-    <div class="flex-item" id="conversation-content">
+
+<div id="main">
+    <div class="container">
+        <h2>Small Modal</h2>
+        <!-- Trigger the modal with a button -->
+        <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Small Modal</button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="myModal" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Modal Header</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            Give your conversation a name:<br>
+                            <input type="text" id="conName" name="conName"><br>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" id="conNameButton" class="btn btn-default" data-dismiss="modal">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Use any element to open the sidenav -->
+    <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; Conversation Panel</span>
+
+    <h2>Conversation</h2>
+   <!--
+        <input value="Reset" onclick="window.location.reload()" type="reset">
+   -->
+    <input id="current-conversation" type="hidden" />
+    <input id="UserID" type="hidden" />
+    <input id="Recipient" type="hidden" />
+
+
+    <div class="container">
+        <input type="button" id="display" value="Display Contacts" />
+        <input type="button" id="testConversation" value="testConversation" />
+        <ul id="contacts"></ul>
+    </div>
+
+    <div class="container-fluid">
+        <input type="button" id="select" value="Select Contact" />
+        <select id="contactselect"></select>
+        <input type="button" id="add-contact" value="Add Contact" />
+    </div>
+
+
+    <div class="flex-container">
+        <div class="flex-item" id="contact-name"><div>Conversation with:<div id="contact-block"></div></div></div>
+        <div class="flex-item" id="conversation-content">
             <input type="hidden" id="displayname" />
             <ul id="discussion"></ul>
+        </div>
+        <div class="flex-item" id="message-div">
+            <input type="text" id="message" />
+            <input type="button" id="sendmessage" value="Send" />
+        </div>
     </div>
-    <div class="flex-item" id="message-div">
-        <input type="text" id="message" />
-        <input type="button" id="sendmessage" value="Send" />
-    </div>
+
     </div>
 
 
 
+    @section scripts {
+        <!--Script references. -->
+        <!--The jQuery library is required and is referenced by default in _Layout.cshtml. -->
+        <!--Reference the SignalR library. -->
+        <script src="~/Scripts/jquery.signalR-2.2.2.min.js"></script>
+        <!--Reference the autogenerated SignalR hub script. -->
+        <script src="~/signalr/hubs"></script>
+        <!--SignalR script to update the chat page and send messages.-->
 
-
-@section scripts {
-    <!--Script references. -->
-    <!--The jQuery library is required and is referenced by default in _Layout.cshtml. -->
-    <!--Reference the SignalR library. -->
-    <script src="~/Scripts/jquery.signalR-2.2.2.min.js"></script>
-    <!--Reference the autogenerated SignalR hub script. -->
-    <script src="~/signalr/hubs"></script>
-    <!--SignalR script to update the chat page and send messages.-->
-
-   
-    
-    <script>
-        var chat = $.connection.chatHub;
-        chat.client.display = function (contact) {
-        };
-        $.connection.hub.start()
-            .done(
-            $.connection.hub.logging = true,
-            function () {
-                console.log("success")
-                chat.server.contacts();
-                    }).fail(function () { alert("fail!") })
-
-
-        $('#select').click(function () {
-            chat.server.displayContacts()
-                .done(function (contactList) {
-                    for (var i = 0; i < contactList.length; i++) {
-                        $('#contactselect').append('<option>'+ contactList[i]
-                            + '</option>');
-                    }
-                })
-            })
-
-
-        $('#display').click(function () {
-            chat.server.displayContacts()
-                .done(function (contactList) {
-                    for (var i = 0; i < contactList.length; i++) {
-                        $('#contacts').append('<li>' + ' ' + contactList[i]
-                            + '</li>');
-                    }
-                    $('<input type="checkbox" />').prependTo($("#contacts").children('li'));
-                })
-        })
-
-        $('#startconversation').click(function () {
-            $('#contact-name').html('')
-            var value = $('#contactselect').find(":selected").text()
-            $('#contact-name').append("Conversation with: " + value)
-            chat.server.startConversation(value);
-        })
-
-
-        $(function () {
-            chat.Client.conversationReference = function (conversationID) {
-                $('#currentconversation').val(conversationID);
+        <script>
+            /* Set the width of the side navigation to 250px and the left margin of the page content to 250px */
+            function openNav() {
+                document.getElementById("mySidenav").style.width = "250px";
+                document.getElementById("main").style.marginLeft = "250px";
             }
-        })
 
+            /* Set the width of the side navigation to 0 and the left margin of the page content to 0 */
+            function closeNav() {
+                document.getElementById("mySidenav").style.width = "0";
+                document.getElementById("main").style.marginLeft = "0";
+            } 
 
-        $(function () {
-            $('#sendmessage').click(function () {
-                var message = $('#message').val();
-                if (message.length > 0)
-                {
-                    chat.server.send($('#displayname').val(), message, $('#current-conversation').val());
-                    // Clear text box and reset focus for next comment.
-                    $('#message').val('').focus();
-                }
-                
-            });
+        </script>
 
-        })
-    </script>
-
-
-<!--<script>
-        $(function () {
-            // Reference the auto-generated proxy for the hub.
+        <script>
+            var recipients = [];
+            var conversationID = null;
+            var conversationName = null;
             var chat = $.connection.chatHub;
-            // Create a function that the hub can call back to display messages.
+
             chat.client.addNewMessageToPage = function (name, message) {
                 // Add the message to the page.
                 $('#discussion').append('<li><strong>' + htmlEncode(name)
                     + '</strong>: ' + htmlEncode(message) + '</li>');
             };
-            // Get the user name and store it to prepend to messages.
-            $('#displayname').val(prompt('Enter your name:', ''));
-            // Set initial focus to message input box.
-            $('#message').focus();
-            // Start the connection.
-            $.connection.hub.start().done(function () {
-                $('#sendmessage').click(function () {
-                    // Call the Send method on the hub.
-                    chat.server.send($('#displayname').val(), $('#message').val());
-                    // Clear text box and reset focus for next comment.
-                    $('#message').val('').focus();
-                });
-            });
-        });
-        // This optional function html-encodes messages for display in the page.
-        function htmlEncode(value) {
-            var encodedValue = $('<div />').text(value).html();
-            return encodedValue;
-        }
-</script>
--->
 
+            chat.client.returnConversationDetails = function (conID) {
+                conversationID = conID;
+                alert(conversationID + "conversationID");
+            }
 
-    <!--
-    <script>
-      $(function () {
-            var chatProxy = $.connection.chatHub;
-            // Create a function that the hub can call to display contacts.
-            chatProxy.Invoke("DisplayContacts") = function (contact) {
-                alert(contact + "TEST CONTACT");
-                $('#contacts').append('<li><strong>' + htmlEncode(contact)
-                    + '</strong>: ' + '</li>');
+            chat.client.display = function (contact) {
             };
-            // Start the connection.
-            $.connection.hub.start().done(function () {
+
+            $.connection.hub.start()
+                .done(
+                $.connection.hub.logging = true,
+                function () {
+                    console.log("success")
+                    chat.server.contacts();
+                    chat.server.getAllConversations();
+         
+
+                }).fail(function () { alert("fail!") })
+
+
+            $('#testConversation').click(function () {
+                conversationUpdate();
+            })
+            //CALL THIS FROM SOMEWHERE
+
+            function conversationUpdate() {
+                
+
+                    //.done(function (conversations) {
+                    //$.each(conversations, function () {
+                    //    console.log("in the for each , conversation loop");
+                    //    var conversation = this;
+                    //    console.log(conversation + "conversation detail");
+                    //  //  console.log(conversation.Name + "conver name");
+                    //    //console.log(conversation.ConversationID + "conver ID");
+                  //  })
+
+               // }).fail(function () { console.log("getting all conversations failed") });
+            }
+            
+
+            $(function() {
+                chat.client.AddExistingConversation = function (c) {
+                    //append to page
+                    console.log("conversaiton " + c.ConversationID);
+                    console.log("con" + c.Name);
+                    html = '<a href= "#">Conversation Name: ' + c.Name + '</a><br/>';
+                    $('#mySidenav').append(html);
+                }
+            })
+
+            $('#select').click(function () {
+                chat.server.displayContacts()
+                    .done(function (contactList) {
+                        for (var i = 0; i < contactList.length; i++) {
+                            $('#contactselect').append('<option>' + contactList[i]
+                                + '</option>');
+                        }
+                    })
+            })
+
+
+            $('#display').click(function () {
+                chat.server.displayContacts()
+                    .done(function (contactList) {
+                        for (var i = 0; i < contactList.length; i++) {
+                            $('#contacts').append('<li>' + ' ' + contactList[i]
+                                + '</li>');
+                        }
+                        $('<input type="checkbox" />').prependTo($("#contacts").children('li'));
+                    })
+            })
+
+            $('#add-contact').click(function () {
+
+                var value = $('#contactselect').find(":selected").text()
+                $('#contact-block').append(value + " ")
+                recipients.push(value);
+                if (recipients.length == 2)
+                {
+                    $('#myModal').modal('show');
+                    conversationName = $('#conName').val();
+                }
+                
+            })
+
+            $('#conNameButton').click(function () {
+                conversationName = $('#conName').val();
+            })
+
+            $(function () {
+                chat.client.con = function (conversationID) {
+                    $('#current-conversation').val(conversationID);
+                    console.log($('#current-conversation').val() + " conversationID");
+                };
+
+            })
+
+
+            $(function () {
                 $('#sendmessage').click(function () {
-                    // Call the Send method on the hub.
-                    chat.server.send($('#displayname').val(), $('#message').val());
-                    // Clear text box and reset focus for next comment.
-                    $('#message').val('').focus();
+                    var message = $('#message').val();
+                    if (message.length > 0 && conversationID === null) {
+                        chat.server.sendFirstMessage(message, recipients, conversationName);
+                        // Clear text box and reset focus for next comment.
+                        $('#message').val('').focus();
+                    }
+                    else if (message.length > 0 && conversationID !== null) {
+                        chat.server.send(message, conversationID)
+                        //call send method that includes a conversationID
+                        $('#message').val('').focus();
+                    }
+
+                })
+
+            })
+
+
+            function htmlEncode(value) {
+                var encodedValue = $('<div />').text(value).html();
+                return encodedValue;
+            }
+        </script>
+
+
+        <!--<script>
+                $(function () {
+                    // Reference the auto-generated proxy for the hub.
+                    var chat = $.connection.chatHub;
+                    // Create a function that the hub can call back to display messages.
+                    chat.client.addNewMessageToPage = function (name, message) {
+                        // Add the message to the page.
+                        $('#discussion').append('<li><strong>' + htmlEncode(name)
+                            + '</strong>: ' + htmlEncode(message) + '</li>');
+                    };
+                    // Get the user name and store it to prepend to messages.
+                    $('#displayname').val(prompt('Enter your name:', ''));
+                    // Set initial focus to message input box.
+                    $('#message').focus();
+                    // Start the connection.
+                    $.connection.hub.start().done(function () {
+                        $('#sendmessage').click(function () {
+                            // Call the Send method on the hub.
+                            chat.server.send($('#displayname').val(), $('#message').val());
+                            // Clear text box and reset focus for next comment.
+                            $('#message').val('').focus();
+                        });
+                    });
                 });
-            });
-        });
-        // This optional function html-encodes messages for display in the page.
-        function htmlEncode(value) {
-            var encodedValue = $('<div />').text(value).html();
-            return encodedValue;
-        }
-    </script>
--->
+                // This optional function html-encodes messages for display in the page.
+                function htmlEncode(value) {
+                    var encodedValue = $('<div />').text(value).html();
+                    return encodedValue;
+                }
+        </script>
+        -->
+        <!--
+            <script>
+              $(function () {
+                    var chatProxy = $.connection.chatHub;
+                    // Create a function that the hub can call to display contacts.
+                    chatProxy.Invoke("DisplayContacts") = function (contact) {
+                        alert(contact + "TEST CONTACT");
+                        $('#contacts').append('<li><strong>' + htmlEncode(contact)
+                            + '</strong>: ' + '</li>');
+                    };
+                    // Start the connection.
+                    $.connection.hub.start().done(function () {
+                        $('#sendmessage').click(function () {
+                            // Call the Send method on the hub.
+                            chat.server.send($('#displayname').val(), $('#message').val());
+                            // Clear text box and reset focus for next comment.
+                            $('#message').val('').focus();
+                        });
+                    });
+                });
+                // This optional function html-encodes messages for display in the page.
+                function htmlEncode(value) {
+                    var encodedValue = $('<div />').text(value).html();
+                    return encodedValue;
+                }
+            </script>
+        -->
 
 
 
-}
+    }

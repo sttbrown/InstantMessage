@@ -6,7 +6,7 @@ namespace InstantMessage.Models
 {
     public class User
     {
-       //User chat details currently independent of authentication - review this
+       
         public User()
         {
             this.Conversations = new List<Conversation>();
@@ -28,7 +28,6 @@ namespace InstantMessage.Models
         public ICollection<Connection> Connections { get; set; }
         public virtual ICollection<Conversation> Conversations { get; set; }
         public virtual ICollection<Message> Messages { get; set; }
-
 
     }
 

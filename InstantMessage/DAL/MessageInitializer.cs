@@ -23,8 +23,8 @@ namespace InstantMessage.DAL
 
             var conversation = new List<Conversation>
             {
-                new Conversation{ConversationID=1,Name="best horn player", },
-                new Conversation{ConversationID=2,Name="wheres the piano?", },
+                new Conversation{Name="best horn player", },
+                new Conversation{Name="wheres the piano?", },
 
             };
         
@@ -34,8 +34,8 @@ namespace InstantMessage.DAL
 
             var messages = new List<Message>
             {
-            new Message{MessageID= 1, Content="Charlie is the finest horn player", UserID = "1", ConversationID= 1 },
-            new Message{MessageID= 2, Content="what you mean Bird?", UserID = "2", ConversationID= 2 },
+            new Message{MessageID= 1, Content="Charlie is the finest horn player"},
+            new Message{MessageID= 2, Content="what you mean Bird?" },
             };
             messages.ForEach(m => context.Messages.Add(m));
             context.SaveChanges();

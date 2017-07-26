@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Diagnostics;
 
 namespace InstantMessage.DAL
 {
@@ -14,7 +15,6 @@ namespace InstantMessage.DAL
         public DataRepository()
         {
              _Data = new InstantMessageContext();
-
            
         }
 
@@ -25,16 +25,12 @@ namespace InstantMessage.DAL
 
         public User getCurrentUser(string authenticatedUser)
         {
-           User currentUser = _Data.Users.Find(authenticatedUser);
-
-            if (currentUser == null)
-            {
-                return null;
-            }
+            // User currentUser = _Data.Users.Find(authenticatedUser);
+            User currentUser = _Data.Users.Where(u => u.UserID == authenticatedUser)
+                .FirstOrDefault();
 
             return currentUser;
         }
-
 
 
         public void createNewUser(string authenticatedUser)
@@ -54,8 +50,10 @@ namespace InstantMessage.DAL
             return;
         }
 
-        public List<Conversation> getAllConversations(User currentUser)
+        public List<Conversation> GetAllConversations(User currentUser)
         {
+
+            //not efficient 
             List<Conversation> conver = new List<Conversation>();
 
             List<Conversation> userCon = new List<Conversation>();
@@ -83,8 +81,48 @@ namespace InstantMessage.DAL
             return userCon;
         }
 
+        public void addMessageToConversation(Message m, string conversationID )
+        {
+            var conversation = _Data.Conversations.Find(m.Conversation);
+            conversation.Messages.Add(m);
 
-        public List<User> getAllContacts(string User)
+            try
+            {
+                _Data.SaveChanges();
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException e)
+            {
+                Debug.WriteLine("exception caught dataRepo.addMessageToCon ");
+            }
+        }
+
+        public void AddMessageToUser(Message m)
+        {
+            
+        }
+
+
+        public Message GenerateMessage(string message, User currentUser, Conversation con)
+        {
+            Message m = new Message();
+
+                m.Content = message;
+                m.User = currentUser;
+                m.Conversation = con;
+
+                con.Messages.Add(m);
+
+                _Data.Messages.Add(m);
+
+                _Data.SaveChanges();
+
+           
+
+            return m;
+        }
+
+
+        public List<User> GetAllContacts(string User)
         {
             List<User> contacts = new List<User>();
             List<User> all = _Data.Users.ToList();
@@ -105,12 +143,73 @@ namespace InstantMessage.DAL
        }
 
 
-        public Conversation startConversation(User current, User other)
+        public Conversation getConversation(int conversationID)
+        {
+            return _Data.Conversations.Find(conversationID);
+        }
+
+
+
+        public List<User> retrieveUsers(List<string> contacts)
+        {
+            List<User> users = new List<User>();
+
+            foreach(string s in contacts)
+            {
+                users.Add(_Data.Users.Find(s));
+            }
+            return users;
+        }
+
+
+        public Conversation startConversation(List<User> users, string conversationName)
         {
             Conversation newConversation = new Conversation();
 
-            newConversation.Users.Add(other);
-            newConversation.Users.Add(current);
+            if (conversationName != null)
+            {
+                newConversation.Name = conversationName;
+                Debug.WriteLine("data repository sets con name = " + conversationName);
+            }
+            else
+            {
+                string name = "";
+                try
+                {
+                    
+                    foreach (User u in users)
+                    {
+                        //once user NAMES have been sorted out this can be changed
+                        name += u.UserID + ", ";
+                    }
+                   
+                }
+                catch(NullReferenceException)
+                {
+                    Debug.WriteLine("do something");
+                }
+
+                newConversation.Name = name;
+            }
+           
+
+            foreach (User u in users)
+            {
+                newConversation.Users.Add(u);
+            }
+
+            _Data.Conversations.Add(newConversation);
+
+            //Save conversation??
+            try
+            {
+                _Data.SaveChanges();
+            }
+            catch(System.Data.Entity.Validation.DbEntityValidationException e)
+            {
+                Debug.WriteLine("exception caught datarepo.startConversation");
+            }
+            
 
             return newConversation;
         }
