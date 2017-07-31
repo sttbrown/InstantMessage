@@ -5,94 +5,97 @@
     ViewBag.Title = "Conversation";
 }
 <style>
-    .flex-container {
+        .flex-container {
             display: flex;
             flex-direction: column;
             width: 800px;
             height: 250px;
             background-color: lightgrey;
-    }
+        }
 
-    .flex-item {
+        .flex-item {
             background-color: white;
             width: 400px;
             height: 30px;
             margin: 10px;
-    }
-    #conversation-content {
-        background-color: white;
-        width: 400px;
-        height: 200px;
-        margin: 10px
-    }
-    #contact-block {
-        background-color: white;
-        width: 400px;
-    }
+        }
 
-   /* The side navigation menu */
-    .sidenav {
-        height: 100%; /* 100% Full-height */
-        width: 0; /* 0 width - change this with JavaScript */
-        position: fixed; /* Stay in place */
-        z-index: 1; /* Stay on top */
-        top: 0;
-        left: 0;
-        background-color: #111; /* Black*/
-        overflow-x: hidden; /* Disable horizontal scroll */
-        padding-top: 60px; /* Place content 60px from the top */
-        transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
-}
+        #conversation-content {
+            background-color: white;
+            width: 400px;
+            height: 200px;
+            margin: 10px
+        }
 
-/* The navigation menu links */
-     .sidenav a {
-        padding: 8px 8px 8px 32px;
-        text-decoration: none;
-        font-size: 25px;
-        color: #818181;
-        display: block;
-        transition: 0.3s
-}
+        #contact-block {
+            background-color: white;
+            width: 400px;
+        }
 
-/* When you mouse over the navigation links, change their color */
-     .sidenav a:hover, .offcanvas a:focus{
-        color: #f1f1f1;
-}
+        /* The side navigation menu */
+        .sidenav {
+            height: 100%; /* 100% Full-height */
+            width: 0; /* 0 width - change this with JavaScript */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Stay on top */
+            top: 0;
+            left: 0;
+            background-color: blue; /* blue*/
+            overflow-x: hidden; /* Disable horizontal scroll */
+            padding-top: 60px; /* Place content 60px from the top */
+            transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+        }
 
-/* Position and style the close button (top right corner) */
-     .sidenav .closebtn {
-        position: absolute;
-        top: 20;
-        right: 25px;
-        font-size: 36px;
-        margin-left: 50px;
-}
+            /* The navigation menu links */
+            .sidenav a {
+                padding: 8px 8px 8px 32px;
+                text-decoration: none;
+                font-size: 25px;
+                color: #818181;
+                display: block;
+                transition: 0.3s
+            }
 
-/* Style page content - use this if you want to push the page content to the right when you open the side navigation */
-     #main {
-        transition: margin-left .5s;
-        padding: 20px;
-}
+            /* When you mouse over the navigation links, change their color */
+            .sidenav a:hover, .offcanvas a:focus {
+                color: #f1f1f1;
+            }
 
-    /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size)
-  see https://www.w3schools.com/howto/howto_js_sidenav.asp
-*/
+            /* Position and style the close button (top right corner) */
+            .sidenav .closebtn {
+                position: absolute;
+                top: 20;
+                right: 25px;
+                font-size: 36px;
+                margin-left: 50px;
+            }
 
+        /* Style page content - use this if you want to push the page content to the right when you open the side navigation */
+        #main {
+            transition: margin-left .5s;
+            padding: 20px;
+        }
+
+        /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size)
+      see https://www.w3schools.com/howto/howto_js_sidenav.asp
+    */
 </style>
 
 <div id="mySidenav" class="sidenav">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-    <a href="#">New Conversation</a>
+    <h5>Conversations</h5>
+</div>
+
+<div id="newConversationSideNav" class="sidenav">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNewConversationNav()">&times;</a>
+    <h4>Select a contact</h4>
+    <div class="flex-item" id="selectedContact"><div class="flex-item">Conversation with:<div id="contact-block"></div></div></div>   
 </div>
 
 
 
 <div id="main">
     <div class="container">
-        <h2>Small Modal</h2>
-        <!-- Trigger the modal with a button -->
-        <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Small Modal</button>
-
         <!-- Modal -->
         <div class="modal fade" id="myModal" role="dialog">
             <div class="modal-dialog modal-sm">
@@ -118,16 +121,21 @@
 
 
     <!-- Use any element to open the sidenav -->
-    <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; Conversation Panel</span>
+    <div>
+        <span style="font-size:30px;cursor:pointer" id="newConversationNavSpan" onclick="openNewConversationNav()">&#9776; New Conversation</span>
+    </div>
+    <div>
+        <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; View Conversations</span>
+    </div>
 
     <h2>Conversation</h2>
-   <!--
-        <input value="Reset" onclick="window.location.reload()" type="reset">
-   -->
+    <!--
+         <input value="Reset" onclick="window.location.reload()" type="reset">
+    
     <input id="current-conversation" type="hidden" />
     <input id="UserID" type="hidden" />
     <input id="Recipient" type="hidden" />
-
+    -->
 
     <div class="container">
         <input type="button" id="display" value="Display Contacts" />
@@ -154,230 +162,242 @@
         </div>
     </div>
 
+    <div class="flex-container">
+
     </div>
+</div>
 
 
 
-    @section scripts {
-        <!--Script references. -->
-        <!--The jQuery library is required and is referenced by default in _Layout.cshtml. -->
-        <!--Reference the SignalR library. -->
-        <script src="~/Scripts/jquery.signalR-2.2.2.min.js"></script>
-        <!--Reference the autogenerated SignalR hub script. -->
-        <script src="~/signalr/hubs"></script>
-        <!--SignalR script to update the chat page and send messages.-->
+@section scripts {
+    <!--Script references. -->
+    <!--The jQuery library is required and is referenced by default in _Layout.cshtml. -->
+    <!--Reference the SignalR library. -->
+    <script src="~/Scripts/jquery.signalR-2.2.2.min.js"></script>
+    <!--Reference the autogenerated SignalR hub script. -->
+    <script src="~/signalr/hubs"></script>
+    <!--SignalR script to update the chat page and send messages.-->
 
-        <script>
-            /* Set the width of the side navigation to 250px and the left margin of the page content to 250px */
-            function openNav() {
-                document.getElementById("mySidenav").style.width = "250px";
-                document.getElementById("main").style.marginLeft = "250px";
+    <script>
+        /* Set the width of the side navigation to 250px and the left margin of the page content to 250px */
+        function openNav() {
+            document.getElementById("mySidenav").style.width = "250px";
+            document.getElementById("main").style.marginLeft = "250px";
+        }
+
+        function openNewConversationNav() {
+            document.getElementById("newConversationSideNav").style.width = "250px";
+            document.getElementById("main").style.marginLeft = "250px";
+        }
+
+        /* Set the width of the side navigation to 0 and the left margin of the page content to 0 */
+        function closeNav() {
+            document.getElementById("mySidenav").style.width = "0";
+            document.getElementById("main").style.marginLeft = "0";
+        }
+
+        function closeNewConversationNav() {
+            document.getElementById("newConversationSideNav").style.width = "0";
+            document.getElementById("main").style.marginLeft = "0";
+        }
+
+    </script>
+
+    <script>
+        var recipients = [];
+        var conversationID = null;
+        var conversationName = null;
+        var chat = $.connection.chatHub;
+
+        //Add new message to page
+        chat.client.addNewMessageToPage = function (name, message) {
+            // Add the message to the page.
+            $('#discussion').append('<li><strong>' + htmlEncode(name)
+                + '</strong>: ' + htmlEncode(message) + '</li>');
+        };
+
+        
+        chat.client.returnConversationDetails = function (conID) {
+            conversationID = conID;
+            alert(conversationID + "conversationID");
+        }
+
+        chat.client.display = function (contact) {
+        };
+
+        //Start connection
+        $.connection.hub.start()
+            .done(
+            $.connection.hub.logging = true,
+            function () {
+                console.log("success"); 
+                chat.server.getAllConversations();
+            }).fail(function () { alert("fail!") })
+
+
+        //get conId from <a href>
+        $('#mySidenav').on('click', 'a', function (event) {
+            var conId = $(this).attr('id');
+            console.log(conId);
+            chat.server.openConversation(conId);
+
+        })
+
+        
+
+
+        //generate list of conversations on side bar
+        $(function () {
+            chat.client.AddExistingConversation = function (c) {
+                //append to page
+                console.log("conversaiton " + c.ConversationID);
+                console.log("con" + c.Name);
+                html = '<a href="javascript:void(0)" class="conversationList" id='+ c.ConversationID +'>' + c.Name + '</a><br/>';
+                $('#mySidenav').append(html);
             }
+        })
 
-            /* Set the width of the side navigation to 0 and the left margin of the page content to 0 */
-            function closeNav() {
-                document.getElementById("mySidenav").style.width = "0";
-                document.getElementById("main").style.marginLeft = "0";
-            } 
+        //generate list of contacts 
+        $('#newConversationNavSpan').click(function () {
+            chat.server.displayContacts()
+                .done(function (contactList) {
+                    for (var i = 0; i < contactList.length; i++) {
+                        //add links in heres
+                        html = '<a href="javascript:void(0)" id=' + contactList[i] + '>' + contactList[i]+ '</a><br/>';
+                        $('#newConversationSideNav').append(html);
 
-        </script>
+                        //$('#contactselect').append('<option>' + contactList[i]
+                          //  + '</option>');
+                    }
+                }).fail(console.log("display failed"))
+        })
 
-        <script>
-            var recipients = [];
-            var conversationID = null;
-            var conversationName = null;
-            var chat = $.connection.chatHub;
+        $('#select').click(function () {
+            chat.server.displayContacts()
+                .done(function (contactList) {
+                    for (var i = 0; i < contactList.length; i++) {
+                        $('#contactselect').append('<option>' + contactList[i]
+                            + '</option>');
+                    }
+                })
+        })
 
-            chat.client.addNewMessageToPage = function (name, message) {
-                // Add the message to the page.
-                $('#discussion').append('<li><strong>' + htmlEncode(name)
-                    + '</strong>: ' + htmlEncode(message) + '</li>');
-            };
+        $('#display').click(function () {
+            chat.server.displayContacts()
+                .done(function (contactList) {
+                    for (var i = 0; i < contactList.length; i++) {
+                        $('#contacts').append('<li>' + ' ' + contactList[i]
+                            + '</li>');
+                    }
+                    $('<input type="checkbox" />').prependTo($("#contacts").children('li'));
+                })
+        })
 
-            chat.client.returnConversationDetails = function (conID) {
-                conversationID = conID;
-                alert(conversationID + "conversationID");
-            }
-
-            chat.client.display = function (contact) {
-            };
-
-            $.connection.hub.start()
-                .done(
-                $.connection.hub.logging = true,
-                function () {
-                    console.log("success")
-                    chat.server.contacts();
-                    chat.server.getAllConversations();
-         
-
-                }).fail(function () { alert("fail!") })
-
-
-            $('#testConversation').click(function () {
-                conversationUpdate();
-            })
-            //CALL THIS FROM SOMEWHERE
-
-            function conversationUpdate() {
-                
-
-                    //.done(function (conversations) {
-                    //$.each(conversations, function () {
-                    //    console.log("in the for each , conversation loop");
-                    //    var conversation = this;
-                    //    console.log(conversation + "conversation detail");
-                    //  //  console.log(conversation.Name + "conver name");
-                    //    //console.log(conversation.ConversationID + "conver ID");
-                  //  })
-
-               // }).fail(function () { console.log("getting all conversations failed") });
+        $('#add-contact').click(function () {
+            var value = $('#contactselect').find(":selected").text()
+            $('#contact-block').append(value + " ")
+            recipients.push(value);
+            if (recipients.length == 2) {
+                $('#myModal').modal('show');
+                conversationName = $('#conName').val();
             }
             
+        })
 
-            $(function() {
-                chat.client.AddExistingConversation = function (c) {
-                    //append to page
-                    console.log("conversaiton " + c.ConversationID);
-                    console.log("con" + c.Name);
-                    html = '<a href= "#">Conversation Name: ' + c.Name + '</a><br/>';
-                    $('#mySidenav').append(html);
+        $('#conNameButton').click(function () {
+            conversationName = $('#conName').val();
+        })
+
+        //$(function () {
+        //    chat.client.con = function (conversationID) {
+        //        $('#current-conversation').val(conversationID);
+        //        console.log($('#current-conversation').val() + " conversationID");
+        //    };
+
+       // })
+
+        $(function () {
+            $('#sendmessage').click(function () {
+                var message = $('#message').val();
+                if (message.length > 0 && conversationID === null) {
+                    chat.server.sendFirstMessage(message, recipients, conversationName);
+                    // Clear text box and reset focus for next message.
+                    $('#message').val('').focus();
+                }
+                else if (message.length > 0 && conversationID !== null) {
+                    chat.server.send(message, conversationID)
+                    //call send method that includes a conversationID
+                    $('#message').val('').focus();
                 }
             })
+        })
 
-            $('#select').click(function () {
-                chat.server.displayContacts()
-                    .done(function (contactList) {
-                        for (var i = 0; i < contactList.length; i++) {
-                            $('#contactselect').append('<option>' + contactList[i]
-                                + '</option>');
-                        }
-                    })
-            })
+        function htmlEncode(value) {
+            var encodedValue = $('<div />').text(value).html();
+            return encodedValue;
+        }
+    </script>
 
 
-            $('#display').click(function () {
-                chat.server.displayContacts()
-                    .done(function (contactList) {
-                        for (var i = 0; i < contactList.length; i++) {
-                            $('#contacts').append('<li>' + ' ' + contactList[i]
-                                + '</li>');
-                        }
-                        $('<input type="checkbox" />').prependTo($("#contacts").children('li'));
-                    })
-            })
-
-            $('#add-contact').click(function () {
-
-                var value = $('#contactselect').find(":selected").text()
-                $('#contact-block').append(value + " ")
-                recipients.push(value);
-                if (recipients.length == 2)
-                {
-                    $('#myModal').modal('show');
-                    conversationName = $('#conName').val();
-                }
-                
-            })
-
-            $('#conNameButton').click(function () {
-                conversationName = $('#conName').val();
-            })
-
+    <!--<script>
             $(function () {
-                chat.client.con = function (conversationID) {
-                    $('#current-conversation').val(conversationID);
-                    console.log($('#current-conversation').val() + " conversationID");
+                // Reference the auto-generated proxy for the hub.
+                var chat = $.connection.chatHub;
+                // Create a function that the hub can call back to display messages.
+                chat.client.addNewMessageToPage = function (name, message) {
+                    // Add the message to the page.
+                    $('#discussion').append('<li><strong>' + htmlEncode(name)
+                        + '</strong>: ' + htmlEncode(message) + '</li>');
                 };
-
-            })
-
-
-            $(function () {
-                $('#sendmessage').click(function () {
-                    var message = $('#message').val();
-                    if (message.length > 0 && conversationID === null) {
-                        chat.server.sendFirstMessage(message, recipients, conversationName);
+                // Get the user name and store it to prepend to messages.
+                $('#displayname').val(prompt('Enter your name:', ''));
+                // Set initial focus to message input box.
+                $('#message').focus();
+                // Start the connection.
+                $.connection.hub.start().done(function () {
+                    $('#sendmessage').click(function () {
+                        // Call the Send method on the hub.
+                        chat.server.send($('#displayname').val(), $('#message').val());
                         // Clear text box and reset focus for next comment.
                         $('#message').val('').focus();
-                    }
-                    else if (message.length > 0 && conversationID !== null) {
-                        chat.server.send(message, conversationID)
-                        //call send method that includes a conversationID
+                    });
+                });
+            });
+            // This optional function html-encodes messages for display in the page.
+            function htmlEncode(value) {
+                var encodedValue = $('<div />').text(value).html();
+                return encodedValue;
+            }
+    </script>
+    -->
+    <!--
+        <script>
+          $(function () {
+                var chatProxy = $.connection.chatHub;
+                // Create a function that the hub can call to display contacts.
+                chatProxy.Invoke("DisplayContacts") = function (contact) {
+                    alert(contact + "TEST CONTACT");
+                    $('#contacts').append('<li><strong>' + htmlEncode(contact)
+                        + '</strong>: ' + '</li>');
+                };
+                // Start the connection.
+                $.connection.hub.start().done(function () {
+                    $('#sendmessage').click(function () {
+                        // Call the Send method on the hub.
+                        chat.server.send($('#displayname').val(), $('#message').val());
+                        // Clear text box and reset focus for next comment.
                         $('#message').val('').focus();
-                    }
-
-                })
-
-            })
-
-
+                    });
+                });
+            });
+            // This optional function html-encodes messages for display in the page.
             function htmlEncode(value) {
                 var encodedValue = $('<div />').text(value).html();
                 return encodedValue;
             }
         </script>
-
-
-        <!--<script>
-                $(function () {
-                    // Reference the auto-generated proxy for the hub.
-                    var chat = $.connection.chatHub;
-                    // Create a function that the hub can call back to display messages.
-                    chat.client.addNewMessageToPage = function (name, message) {
-                        // Add the message to the page.
-                        $('#discussion').append('<li><strong>' + htmlEncode(name)
-                            + '</strong>: ' + htmlEncode(message) + '</li>');
-                    };
-                    // Get the user name and store it to prepend to messages.
-                    $('#displayname').val(prompt('Enter your name:', ''));
-                    // Set initial focus to message input box.
-                    $('#message').focus();
-                    // Start the connection.
-                    $.connection.hub.start().done(function () {
-                        $('#sendmessage').click(function () {
-                            // Call the Send method on the hub.
-                            chat.server.send($('#displayname').val(), $('#message').val());
-                            // Clear text box and reset focus for next comment.
-                            $('#message').val('').focus();
-                        });
-                    });
-                });
-                // This optional function html-encodes messages for display in the page.
-                function htmlEncode(value) {
-                    var encodedValue = $('<div />').text(value).html();
-                    return encodedValue;
-                }
-        </script>
-        -->
-        <!--
-            <script>
-              $(function () {
-                    var chatProxy = $.connection.chatHub;
-                    // Create a function that the hub can call to display contacts.
-                    chatProxy.Invoke("DisplayContacts") = function (contact) {
-                        alert(contact + "TEST CONTACT");
-                        $('#contacts').append('<li><strong>' + htmlEncode(contact)
-                            + '</strong>: ' + '</li>');
-                    };
-                    // Start the connection.
-                    $.connection.hub.start().done(function () {
-                        $('#sendmessage').click(function () {
-                            // Call the Send method on the hub.
-                            chat.server.send($('#displayname').val(), $('#message').val());
-                            // Clear text box and reset focus for next comment.
-                            $('#message').val('').focus();
-                        });
-                    });
-                });
-                // This optional function html-encodes messages for display in the page.
-                function htmlEncode(value) {
-                    var encodedValue = $('<div />').text(value).html();
-                    return encodedValue;
-                }
-            </script>
-        -->
+    -->
 
 
 
-    }
+}

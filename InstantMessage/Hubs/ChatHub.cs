@@ -28,17 +28,35 @@ namespace InstantMessage
         private void PersistStateHelper()
         {
             AuthenticatedUser = Clients.Caller.UserId;
-            CurrentUser = _Repo.getCurrentUser(AuthenticatedUser);
+            CurrentUser = _Repo.getCurrentUser(AuthenticatedUser); //not efficient?
         }
 
+
+        private void InitializeGroups()
+        {
+            if (CurrentUser != null)
+            {
+                foreach(var con in CurrentUser.Conversations)
+                {
+                    //this is a hack that allows ConversationID which is 
+                    //an incremental int to be used as a groupName which must
+                    //be a string within SignalR.
+                    string groupName = con.ConversationID.ToString();
+                    Groups.Add(Context.ConnectionId, groupName);
+                }
+            }
+        }
 
         public override Task OnConnected()
         {
             if (Context.User.Identity.IsAuthenticated)
             {
-
                 Clients.Caller.UserId = Context.User.Identity.GetUserName();
                 Clients.Caller.initialized();
+                //empty method "initialized" ensures that client is passed userID to persist state
+
+                PersistStateHelper();
+                InitializeGroups();
 
             }
             else
@@ -47,67 +65,51 @@ namespace InstantMessage
                 //do something eg return to log-in page?
             }
 
-            //if (Context.User.Identity.IsAuthenticated)
-            //{
-            //    AuthenticatedUser = Context.User.Identity.GetUserName();
-            //    CurrentUser = _Repo.getCurrentUser(AuthenticatedUser);
-
-            //}
-            //else
-            //{
-            //    Console.WriteLine("problem authenticating");
-            //    //do something eg return to log-in page?
-            //}
-
-            ////
-
-
-
-
-            // EXCEPTION AT TIMES
-            //try
-            //{
-            //    AuthenticatedUser = HttpContext.Current.GetOwinContext()
-            //    .Authentication.User.Identity.GetUserName();
-
-
-            //    var user = Context.User;
-            //    string name = user.Identity.Name;
-
-            //    // AuthenticatedUser = "s.t.t.brown@hotmail.co.uk";
-
-            //    CurrentUser = _Repo.getCurrentUser(AuthenticatedUser);
-
-
-            //    Debug.WriteLine("user.Identity.Name =  " + name);
-            //    Debug.WriteLine("AuthenticatedUser =  " + AuthenticatedUser);
-
-
-            //}
-            //catch
-            //{
-            //    Debug.WriteLine("authentication exception");
-            //}
-
             return base.OnConnected();
         }
 
-        public void Contacts()
+
+        public void OpenConversation(int conId)
         {
-            //List<User> contacts = _Repo.getAllContacts(CurrentUser.UserID);
+            PersistStateHelper();
+            Debug.WriteLine("The ConID is " + conId);
+            //server side check if user is authorised to view that
+            //conversation
+           Conversation con= _Repo.getConversation(conId);
 
-            string john = "John";
+            Boolean isAuthorized;
 
-            Clients.All.display(john);
+            if (con != null)
+            {
+                isAuthorized = _Repo.CheckAuthorization(CurrentUser, con);
+
+                if (isAuthorized == true)
+                {
+                    Debug.WriteLine("isAuthorised = true");
+                    //given authorisation return conversation history
+                    //to client. 
+                    
+
+
+
+
+
+                }
+            }
+             
+
+
+
 
 
         }
 
 
+        //this needs to be changed so that instead of 
+        //return type a client method is called.
         public List<string> DisplayContacts()
         {
             PersistStateHelper();
-
 
             List<User> users = _Repo.GetAllContacts(AuthenticatedUser);
             List<String> contacts = new List<String>();
@@ -134,8 +136,12 @@ namespace InstantMessage
                 Conversation con = StartConversation(contacts, conversationName);
 
                 Message conversationMessage = _Repo.GenerateMessage(message, CurrentUser, con);
-                UpdateMessageOnClient(conversationMessage);
+                UpdateMessageOnClient(conversationMessage, con);
 
+            }
+            else
+            {
+                Debug.WriteLine("message is null");
             }
         }
 
@@ -150,15 +156,20 @@ namespace InstantMessage
                 Debug.WriteLine(message + "OTHER MESSAGE " + con.ConversationID);
 
                 Message conversationMessage = _Repo.GenerateMessage(message, CurrentUser, con);
-                UpdateMessageOnClient(conversationMessage);
+                UpdateMessageOnClient(conversationMessage, con);
             }
         }
 
 
-        private void UpdateMessageOnClient(Message conversationMessage)
+        private void UpdateMessageOnClient(Message conversationMessage, Conversation con)
         {
+            string groupName = con.ConversationID.ToString();
+           
             //    //updates all connected clients 
-            Clients.All.addNewMessageToPage(conversationMessage.User.UserID, conversationMessage.Content);
+            //Clients.All.addNewMessageToPage(conversationMessage.User.UserID, conversationMessage.Content);
+
+            //updates all connected clients within that group. 
+            Clients.Group(groupName).addNewMessageToPage(conversationMessage.User.UserID, conversationMessage.Content);
 
 
         }
@@ -169,8 +180,6 @@ namespace InstantMessage
             List<User> users = _Repo.retrieveUsers(contacts);
 
             Conversation con = _Repo.startConversation(users, conversationName);
-
-           // con.ConversationID = "Example Conversation";
             
             Clients.Caller.ReturnConversationDetails(con.ConversationID);
             

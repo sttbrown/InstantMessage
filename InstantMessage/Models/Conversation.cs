@@ -15,11 +15,6 @@ namespace InstantMessage.Models
             Users = new List<User>();
         }
 
-        public Conversation(int cid)
-        {
-           
-        }
-
         //Conversation objects provide a means of grouping together messages
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -37,7 +32,6 @@ namespace InstantMessage.Models
 
         //other candidates/properties
         //public DateTime DateStarted { get; set; }
-        // public virtual ICollection<Participant> Participants { get; set; }
     }
 
     //public class ConversationDBContext : DbContext

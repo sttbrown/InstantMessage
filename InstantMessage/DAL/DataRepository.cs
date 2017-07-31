@@ -213,6 +213,41 @@ namespace InstantMessage.DAL
 
             return newConversation;
         }
+
+
+        public Boolean CheckAuthorization(User current, Conversation con)
+        {
+            Boolean isAuthorized = false;
+
+            //var user = _Data.Users
+            //        .Include(u => u.Conversations)
+            //        .SingleOrDefault(u => u.UserID == current.UserID);
+
+            //get conversation, check users in conversation, 
+
+            if (con.Users.Contains(current))
+            {
+                isAuthorized = true;
+            }
+            else
+            {
+                isAuthorized = false;
+            }
+
+            return isAuthorized;
+        }
+
+
+        public List<Message> getMessages(Conversation con)
+        {
+
+            // students = students.OrderBy(s => s.EnrollmentDate);
+            List<Message> messages = con.Messages.ToList();
+
+
+            return messages;
+        }
+
             
             
     }

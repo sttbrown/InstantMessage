@@ -14,6 +14,7 @@ namespace InstantMessage.Models
 
             //MembershipUser user = Membership.GetUser();
             //UserID = user.ToString();
+            Sent = DateTime.Now;
 
         }
 
@@ -23,7 +24,8 @@ namespace InstantMessage.Models
         public int MessageID { get; set; }
 
         public string Content { get; set; }
-        //public DateTime Sent { get; set; }
+        public DateTime Sent { get; set; }
+        public Boolean Received { get; set; }
 
         //a message belongs to a single user
         //public string UserID { get; set; }
