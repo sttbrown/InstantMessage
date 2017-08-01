@@ -52,7 +52,7 @@ namespace InstantMessage.DAL
 
         public List<Conversation> GetAllConversations(User currentUser)
         {
-
+            //REFACTOR THIS!!!
             //not efficient 
             List<Conversation> conver = new List<Conversation>();
 
@@ -121,7 +121,7 @@ namespace InstantMessage.DAL
             return m;
         }
 
-
+        //this is ALL other users, not yet contacts
         public List<User> GetAllContacts(string User)
         {
             List<User> contacts = new List<User>();
@@ -242,8 +242,9 @@ namespace InstantMessage.DAL
         {
 
             // students = students.OrderBy(s => s.EnrollmentDate);
+           // Conversation conInOrder = con.Messages.OrderBy(m => m.Sent);
+           // List<Message> messages = conInOrder.Messages.ToList();
             List<Message> messages = con.Messages.ToList();
-
 
             return messages;
         }

@@ -45,6 +45,10 @@ namespace InstantMessage
                     Groups.Add(Context.ConnectionId, groupName);
                 }
             }
+            else
+            {
+                Debug.WriteLine("current user is null");
+            }
         }
 
         public override Task OnConnected()
@@ -77,7 +81,7 @@ namespace InstantMessage
             //conversation
            Conversation con= _Repo.getConversation(conId);
 
-            Boolean isAuthorized;
+            Boolean isAuthorized= false;
 
             if (con != null)
             {
@@ -88,12 +92,20 @@ namespace InstantMessage
                     Debug.WriteLine("isAuthorised = true");
                     //given authorisation return conversation history
                     //to client. 
-                    
+                    List<Message> messages = _Repo.getMessages(con);
+
+                    foreach(Message m in messages)
+                    {
+                        Clients.Group("" + con.ConversationID).loadMessage(m.User.UserID, m.Content);
+                    }
 
 
 
-
-
+                }
+                else
+                {
+                    Debug.WriteLine("user not authorised to access this conversation");
+                    //add client side message
                 }
             }
              

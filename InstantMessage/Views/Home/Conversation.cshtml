@@ -40,7 +40,7 @@
             z-index: 1; /* Stay on top */
             top: 0;
             left: 0;
-            background-color: blue; /* blue*/
+            background-color: lightgray; /* grey*/
             overflow-x: hidden; /* Disable horizontal scroll */
             padding-top: 60px; /* Place content 60px from the top */
             transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
@@ -56,15 +56,16 @@
                 transition: 0.3s
             }
 
-            /* When you mouse over the navigation links, change their color */
-            .sidenav a:hover, .offcanvas a:focus {
-                color: #f1f1f1;
-            }
+    
+    /* When you mouse over the navigation links, change their color */
+    .sidenav a:hover, .offcanvas a:focus {
+        color: #f1f1f1;
+    }
 
             /* Position and style the close button (top right corner) */
             .sidenav .closebtn {
                 position: absolute;
-                top: 20;
+                top: 20px;
                 right: 25px;
                 font-size: 36px;
                 margin-left: 50px;
@@ -235,15 +236,20 @@
             }).fail(function () { alert("fail!") })
 
 
-        //get conId from <a href>
+        //get conId from <a href>, pass to server method
         $('#mySidenav').on('click', 'a', function (event) {
             var conId = $(this).attr('id');
             console.log(conId);
             chat.server.openConversation(conId);
 
         })
+        //loading message function
+        $(function () {
+            chat.client.loadMessage = function (content) {
+                console.log(content);
 
-        
+            }
+        })
 
 
         //generate list of conversations on side bar
@@ -252,25 +258,38 @@
                 //append to page
                 console.log("conversaiton " + c.ConversationID);
                 console.log("con" + c.Name);
-                html = '<a href="javascript:void(0)" class="conversationList" id='+ c.ConversationID +'>' + c.Name + '</a><br/>';
+                html = '<a href="javascript:void(0)" id='+ c.ConversationID +'>' + c.Name + '</a><br/>';
                 $('#mySidenav').append(html);
             }
         })
 
-        //generate list of contacts 
+        //generate list of contacts on the Navbar - this needs refactored on server
+        //and client
         $('#newConversationNavSpan').click(function () {
             chat.server.displayContacts()
                 .done(function (contactList) {
                     for (var i = 0; i < contactList.length; i++) {
                         //add links in heres
-                        html = '<a href="javascript:void(0)" id=' + contactList[i] + '>' + contactList[i]+ '</a><br/>';
+                        html = '<a href="javascript:void(0)" id=' + contactList[i] + '>' + contactList[i] + '</a><br/>';
                         $('#newConversationSideNav').append(html);
-
-                        //$('#contactselect').append('<option>' + contactList[i]
-                          //  + '</option>');
                     }
                 }).fail(console.log("display failed"))
         })
+
+        //Gets contactId from nav side bar
+        $('#newConversationSideNav').on('click', 'a', function (event) {
+            var contactId = $(this).attr('id');
+            console.log(contactId);
+            $('#contact-block').append(contactId + " ")
+            recipients.push(contactId);
+            if (recipients.length == 2) {
+                $('#myModal').modal('show');
+                conversationName = $('#conName').val();
+            }
+         })
+
+
+       
 
         $('#select').click(function () {
             chat.server.displayContacts()
