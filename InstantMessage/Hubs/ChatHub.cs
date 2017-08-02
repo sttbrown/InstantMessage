@@ -138,6 +138,8 @@ namespace InstantMessage
 
         public void SendFirstMessage(string message, List<string> contacts, string conversationName)
         {
+            //Is user authorised to contact these Users??
+
             Debug.WriteLine(message + "FIRST MESSAGE ");
 
             PersistStateHelper();
@@ -163,12 +165,27 @@ namespace InstantMessage
 
             if (message != null)
             {
-                //get Conversation, then call generateMessage
-                Conversation con = _Repo.getConversation(conversationID);
-                Debug.WriteLine(message + "OTHER MESSAGE " + con.ConversationID);
+                 Conversation con = _Repo.getConversation(conversationID);
 
-                Message conversationMessage = _Repo.GenerateMessage(message, CurrentUser, con);
-                UpdateMessageOnClient(conversationMessage, con);
+                Boolean isAuthorized = _Repo.CheckAuthorization(CurrentUser, con);
+
+                if (isAuthorized == true)
+                {
+
+
+                    Message conversationMessage = _Repo.GenerateMessage(message, CurrentUser, con);
+                    UpdateMessageOnClient(conversationMessage, con);
+
+                }
+                else
+                {
+                    Debug.WriteLine("User not authorised");
+                }
+
+            }
+            else
+            {
+                Debug.WriteLine("no message present"); //this is an extra check, done client side aswell
             }
         }
 
