@@ -52,73 +52,56 @@ namespace InstantMessage.DAL
 
         public List<Conversation> GetAllConversations(User currentUser)
         {
-            //REFACTOR THIS!!!
-            //not efficient 
-            List<Conversation> conver = new List<Conversation>();
+            var results = _Data.Conversations.Where(c => c.Users.Select(u => u.UserID).Contains(currentUser.UserID));
+            
+            List<Conversation> userCon = results.ToList();
 
-            List<Conversation> userCon = new List<Conversation>();
-
-            try
-            {
-                conver = _Data.Conversations.ToList();
-
-                foreach (Conversation c in conver)
-                {
-                    if (c.Users.Contains(currentUser))
-                    {
-                        userCon.Add(c);
-                    }
-                }
-
-
-            }
-            catch (ArgumentNullException e)
-            {
-                Console.WriteLine("no conversations available");
-                return null;
-            }           
+            userCon.Sort((x, y) => x.LastEdited.CompareTo(y.LastEdited));
+            userCon.Reverse(); //is this necessary? could iterate through backwards in chathub instead?
 
             return userCon;
-        }
 
-        public void addMessageToConversation(Message m, string conversationID )
-        {
-            var conversation = _Data.Conversations.Find(m.Conversation);
-            conversation.Messages.Add(m);
-
-            try
-            {
-                _Data.SaveChanges();
-            }
-            catch (System.Data.Entity.Validation.DbEntityValidationException e)
-            {
-                Debug.WriteLine("exception caught dataRepo.addMessageToCon ");
-            }
-        }
-
-        public void AddMessageToUser(Message m)
-        {
             
         }
+
+        //public void addMessageToConversation(Message m, string conversationID )
+        //{
+        //    var conversation = _Data.Conversations.Find(m.Conversation);
+        //    conversation.Messages.Add(m);
+
+        //    try
+        //    {
+        //        _Data.SaveChanges();
+        //    }
+        //    catch (System.Data.Entity.Validation.DbEntityValidationException e)
+        //    {
+        //        Debug.WriteLine("exception caught dataRepo.addMessageToCon ");
+        //    }
+        //}
+
+        //public void AddMessageToUser(Message m)
+        //{
+            
+        //}
 
 
         public Message GenerateMessage(string message, User currentUser, Conversation con)
         {
             Message m = new Message();
 
-                m.Content = message;
-                m.User = currentUser;
-                m.Conversation = con;
+            m.Content = message;
+            m.User = currentUser;
+            m.Conversation = con;
 
-                con.Messages.Add(m);
+            con.LastEdited = DateTime.Now;
+            //perhaps last message and last message sender should be separated at level of models..
+            con.LastMessage = ""+currentUser.UserID+": "+ message;
+            con.Messages.Add(m);
 
-                _Data.Messages.Add(m);
+            _Data.Messages.Add(m);
+            _Data.SaveChanges();
 
-                _Data.SaveChanges();
-
-           
-
-            return m;
+             return m;
         }
 
         //this is ALL other users, not yet contacts
@@ -169,10 +152,12 @@ namespace InstantMessage.DAL
             if (conversationName != null)
             {
                 newConversation.Name = conversationName;
-                Debug.WriteLine("data repository sets con name = " + conversationName);
             }
             else
             {
+
+                Debug.WriteLine("data repository sets con name = " + conversationName);
+
                 string name = "";
                 try
                 {
@@ -200,7 +185,6 @@ namespace InstantMessage.DAL
 
             _Data.Conversations.Add(newConversation);
 
-            //Save conversation??
             try
             {
                 _Data.SaveChanges();
@@ -244,6 +228,7 @@ namespace InstantMessage.DAL
             // students = students.OrderBy(s => s.EnrollmentDate);
            // Conversation conInOrder = con.Messages.OrderBy(m => m.Sent);
            // List<Message> messages = conInOrder.Messages.ToList();
+           //Appears to be naturally in order. 
             List<Message> messages = con.Messages.ToList();
 
             return messages;

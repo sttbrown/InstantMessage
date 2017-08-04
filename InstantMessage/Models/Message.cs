@@ -12,8 +12,6 @@ namespace InstantMessage.Models
 
         public Message() {
 
-            //MembershipUser user = Membership.GetUser();
-            //UserID = user.ToString();
             Sent = DateTime.Now;
 
         }

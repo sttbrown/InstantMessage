@@ -13,6 +13,7 @@ namespace InstantMessage.Models
         {
             Messages = new List<Message>();
             Users = new List<User>();
+            LastEdited = DateTime.Now;
         }
 
         //Conversation objects provide a means of grouping together messages
@@ -21,17 +22,18 @@ namespace InstantMessage.Models
         public int ConversationID { get; set; }
 
         public string Name { get; set; } //make this optional?
+        public string LastMessage { get; set; }
+
+        //Is this a good idea? seems as though it might be 
+        //[Index("LastEdited")]
+        public DateTime LastEdited { get; set; }
         
         [JsonIgnore]
         public virtual ICollection<Message> Messages { get; set; }
 
         [JsonIgnore]
         public virtual ICollection<User> Users { get; set;  }
-
-        //We will probably need Date Updated here...
-
-        //other candidates/properties
-        //public DateTime DateStarted { get; set; }
+        
     }
 
     //public class ConversationDBContext : DbContext

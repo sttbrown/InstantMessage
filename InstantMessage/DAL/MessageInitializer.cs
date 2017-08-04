@@ -23,8 +23,8 @@ namespace InstantMessage.DAL
 
             var conversation = new List<Conversation>
             {
-                new Conversation{Name="best horn player", },
-                new Conversation{Name="wheres the piano?", },
+                new Conversation{Name="best horn player", LastEdited=DateTime.Now, LastMessage="Example Last Message" },
+                new Conversation{Name="wheres the piano?",  LastEdited=DateTime.Now, LastMessage="Example Last Message" },
 
             };
         

@@ -57,8 +57,6 @@
             }
 
 
-
-
     /* When you mouse over the navigation links, change their color */
     .sidenav a:hover, .offcanvas a:focus {
         color: #f1f1f1;
@@ -85,7 +83,7 @@
 </style>
 
 <div id="mySideNav" class="sidenav">
-        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
         <h5>Conversations</h5>
 </div>
 
@@ -94,8 +92,6 @@
     <h4>Select a contact</h4>
     <div class="flex-item" id="selectedContact"><div class="flex-item">Conversation with:<div id="contact-block"></div></div></div>
 </div>
-
-
 
 <div id="main">
     <div class="container">
@@ -122,7 +118,10 @@
         </div>
     </div>
 
-
+    <div id="newMessageNotification">
+        <span id=newMessageNotificationId></span>
+        <span style="font-size:20px" id="newMessageNotificationSpan">Notifications</span>
+    </div>
     <!-- Use any element to open the sidenav -->
     <div>
         <span style="font-size:30px;cursor:pointer" id="newConversationNavSpan" onclick="openNewConversationNav()">&#9776; New Conversation</span>
@@ -167,6 +166,12 @@
             document.getElementById("main").style.marginLeft = "250px";
         }
 
+        //for development purposes leave nav open on load
+        $(function () {
+            openNav();
+
+        })
+
         function openNewConversationNav() {
             document.getElementById("newConversationSideNav").style.width = "250px";
             document.getElementById("main").style.marginLeft = "250px";
@@ -183,16 +188,13 @@
             document.getElementById("main").style.marginLeft = "0";
         }
 
-    
+        //global variables accecptable?
         var recipients = [];
         var conversationID = null;
         var conversationName = null;
         var connected = false;
         var chat = $.connection.chatHub;
-
-      
-
-      
+    
 
         //Add new message to page
         chat.client.addNewMessageToPage = function (name, message) {
@@ -210,6 +212,7 @@
         chat.client.display = function (contact) {
         };
 
+
         //Start connection
         $.connection.hub.start()
             .done(
@@ -218,11 +221,42 @@
                 console.log("success");
                 connected = true;
                 setConnectionStatus();
+                //anytime conversations reloaded make sure 
+               // $("div").remove(".conItem");
+               // chat.server.getAllConversations();
+                getAllConversations();
                 // gotAnyNew messages?
             }).fail(function () {
                 connected = false;
                 setConnectionStatus();
             })
+
+        //attempt to reconnect 5 seconds after connection drops//refactor this with method above
+        //to reduce code duplication. 
+        $.connection.hub.disconnected(function () {
+            setTimeout(function () {
+                $.connection.hub.start().done(
+                    $.connection.hub.logging = true,
+                    function () {
+                        console.log("success");
+                        connected = true;
+                        setConnectionStatus();
+                      //  $("div").remove(".conItem");
+                       // chat.server.getAllConversations();
+                        getAllConversations();
+                        // gotAnyNew messages?
+                    }).fail(function () {
+                        connected = false;
+                        setConnectionStatus();
+                        console.log("connection attempt failed");
+                    })
+            }, 5000); // Restart connection after 5 seconds.
+        });
+
+        function getAllConversations() {
+            $(".conItem").remove();
+            chat.server.getAllConversations();
+        }
 
         $(function () {
             setConnectionStatus();
@@ -239,9 +273,7 @@
             {
                 $("#connectionSpan").text("");
                 $("#connectionSpan").text("Connection Status: No Connection");
-
             }
-
         }
 
         //get conId from <a href>, pass to server method
@@ -251,6 +283,9 @@
             console.log("var conName is... " + conName);
             //set conversationId for any new messages. 
             conversationID = conId;
+            //reset notifications since user has accessed sideNav
+            $('#newMessageNotificationSpan').text("Notifications:");
+
             $('#discussion').empty();
             $('#conversationHeading').text("");
             $('#conversationHeading').text('Details:  ' + conName);
@@ -271,24 +306,37 @@
 
             }
         })
-
-        
-
         //generate list of conversations on side bar
         $(function () {
             chat.client.AddExistingConversation = function (c) {
                 //append to page
-                html = '<a href="javascript:void(0)" id="' + c.ConversationID +'", data-address="'+c.Name+'">' + c.Name + '</a><br/>';
+                html = '<div class="conItem"><a href="javascript:void(0)" class="conItem" id="' + c.ConversationID + '", data-address="' + c.Name + '">' + c.Name + '</a><br/>' +
+                    '<p>"'+c.LastMessage+'", '+c.LastEdited+',  </p><br/></div>';
                 $('#mySideNav').append(html);
                 console.log(html);
             }
         })
-
+  
         //generate a list of conversations in side bar upon click
         $('#existingConversationNavSpan').click(function () {
-            chat.server.getAllConversations();
+            getAllConversations();
+        })
+        
+        $(function () {
+            chat.client.newMessageNotification = function (conId) {
+                html = '<a href="javascript:void(0)" id="' + conId + '" onclick="goToMessage()">click here to view conversation</a><br/>';
+
+                $('#newMessageNotificationSpan').text("You have a new message");
+                //do something with this.
+            }
         })
 
+        function goToMessage() {
+            console.log("go to message");
+           // chat.server.openConversation(conId);
+
+        }
+            
         //generate list of contacts on the Navbar - this needs refactored on server
         //and client
         $('#newConversationNavSpan').click(function () {
@@ -313,10 +361,7 @@
                 $('#myModal').modal('show');
                 conversationName = $('#conName').val();
             }
-         })
-
-
-       
+        })
 
         $('#select').click(function () {
             chat.server.displayContacts()
@@ -348,10 +393,7 @@
                 conversationName = $('#conName').val();
             }
             
-        })
-
-
-      
+        })     
 
         $(function () {
             $('#sendmessage').click(function () {
@@ -372,7 +414,17 @@
         })
 
         $(function () {
-            makeConvDivInvisible();   
+            chat.client.updateConversations = function () {
+                //clear convo side nav ..
+              //  $("div").remove(".conItem"); 
+               // chat.server.getAllConversations();
+                getAllConversations();
+            } 
+        })
+
+        $(function () {
+           // makeConvDivInvisible();   
+            makeConvDivVisible();
         });
 
         function makeConvDivInvisible() {

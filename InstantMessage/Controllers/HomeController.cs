@@ -43,13 +43,13 @@ namespace InstantMessage.Controllers
             {
                 //return users conversations. 
 
-                List<Conversation> conversations = _repo.GetAllConversations(CurrentUser);
+                //List<Conversation> conversations = _repo.GetAllConversations(CurrentUser);
 
-                if (conversations == null)
-                {
-                    Console.WriteLine("no conversations available");
-                    return View("NewUser");
-                }
+                //if (conversations == null)
+                //{
+                //    Console.WriteLine("no conversations available");
+                //    return View("NewUser");
+                //}
 
                 return View("Conversation");
             }
@@ -81,15 +81,15 @@ namespace InstantMessage.Controllers
             {
                 //return users conversations. 
 
-                List<Conversation> conversations = _repo.GetAllConversations(CurrentUser);
+                //List<Conversation> conversations = _repo.GetAllConversations(CurrentUser);
 
-                if (conversations == null)
-                {
-                    Console.WriteLine("no conversations available");
-                    return View("NewUser");
-                }
+                //if (conversations == null)
+                //{
+                //    Console.WriteLine("no conversations available");
+                //    return View("NewUser");
+                //}
 
-                return View(conversations);
+                return View();
             }
         }
 

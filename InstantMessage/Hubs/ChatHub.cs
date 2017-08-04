@@ -51,6 +51,16 @@ namespace InstantMessage
             }
         }
 
+        private void CreateNewGroup(Conversation con)
+        {
+            if (CurrentUser != null)
+            {
+                string groupName = con.ConversationID.ToString();
+                Groups.Add(Context.ConnectionId, groupName);
+            }
+            
+        }
+
         public override Task OnConnected()
         {
             if (Context.User.Identity.IsAuthenticated)
@@ -92,15 +102,14 @@ namespace InstantMessage
                     Debug.WriteLine("isAuthorised = true");
                     //given authorisation return conversation history
                     //to client. 
+
+
                     List<Message> messages = _Repo.getMessages(con);
 
                     foreach(Message m in messages)
                     {
                         Clients.Group("" + con.ConversationID).loadMessage(m.User.UserID, m.Content);
                     }
-
-
-
                 }
                 else
                 {
@@ -108,12 +117,6 @@ namespace InstantMessage
                     //add client side message
                 }
             }
-             
-
-
-
-
-
         }
 
 
@@ -139,6 +142,11 @@ namespace InstantMessage
         public void SendFirstMessage(string message, List<string> contacts, string conversationName)
         {
             //Is user authorised to contact these Users??
+            //carry out sanitation of all user input.
+
+            //When conversation starts need to ensure group created and all participants are 
+            //added
+
 
             Debug.WriteLine(message + "FIRST MESSAGE ");
 
@@ -148,6 +156,10 @@ namespace InstantMessage
             {
                 contacts.Add(AuthenticatedUser);
                 Conversation con = StartConversation(contacts, conversationName);
+
+                //creates new signalR group so that participants are
+                //notified
+                CreateNewGroup(con);
 
                 Message conversationMessage = _Repo.GenerateMessage(message, CurrentUser, con);
                 UpdateMessageOnClient(conversationMessage, con);
@@ -163,6 +175,8 @@ namespace InstantMessage
         {
             PersistStateHelper();
 
+            //carry out sanitation of all user input.
+
             if (message != null)
             {
                  Conversation con = _Repo.getConversation(conversationID);
@@ -171,8 +185,6 @@ namespace InstantMessage
 
                 if (isAuthorized == true)
                 {
-
-
                     Message conversationMessage = _Repo.GenerateMessage(message, CurrentUser, con);
                     UpdateMessageOnClient(conversationMessage, con);
 
@@ -193,13 +205,20 @@ namespace InstantMessage
         private void UpdateMessageOnClient(Message conversationMessage, Conversation con)
         {
             string groupName = con.ConversationID.ToString();
-           
+
             //    //updates all connected clients 
             //Clients.All.addNewMessageToPage(conversationMessage.User.UserID, conversationMessage.Content);
 
-            //updates all connected clients within that group. 
-            Clients.Group(groupName).addNewMessageToPage(conversationMessage.User.UserID, conversationMessage.Content);
+            //Sanitise for display
+            string htmlContent = System.Net.WebUtility.HtmlEncode(conversationMessage.Content);
 
+            //updates all connected clients within that group. 
+            Clients.Group(groupName).addNewMessageToPage(conversationMessage.User.UserID, htmlContent);
+
+            //Also informs all users that they have received new message
+            Clients.Group(groupName).newMessageNotification(con.ConversationID);
+            
+            Clients.Group(groupName).updateConversations();
 
         }
 
@@ -221,9 +240,7 @@ namespace InstantMessage
         {
             PersistStateHelper();
 
-            List<Conversation> conversations = _Repo.GetAllConversations(CurrentUser);
-
-            int n = conversations.Count;
+            List<Conversation> conversations = _Repo.GetAllConversations(CurrentUser);            
           
            foreach (Conversation c in conversations)
            {
@@ -233,26 +250,19 @@ namespace InstantMessage
         }
 
 
+    public override Task OnReconnected()
+    {
+            PersistStateHelper();
+            return base.OnReconnected();
+    }
 
+    public override Task OnDisconnected(bool stopCalled)
+    {
+            // delete the association between the current connection and user name.
+            Clients.Caller.UserId = null;
 
-   
-
-    //public override Task OnDisconnected()
-    //{
-    //    // Add your own code here.
-    //    // For example: in a chat application, mark the user as offline, 
-    //    // delete the association between the current connection id and user name.
-    //    return base.OnDisconnected();
-    //}
-
-    //public override Task OnReconnected()
-    //{
-    //    // Add your own code here.
-    //    // For example: in a chat application, you might have marked the
-    //    // user as offline after a period of inactivity; in that case 
-    //    // mark the user as online again.
-    //    return base.OnReconnected();
-    //}
+            return base.OnDisconnected(stopCalled);
+    }
 
 
     }
