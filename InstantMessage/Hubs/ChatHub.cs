@@ -120,21 +120,22 @@ namespace InstantMessage
         }
 
 
-        //this needs to be changed so that instead of 
-        //return type a client method is called.
-        public List<string> DisplayContacts()
+       
+        public void DisplayContacts()
         {
             PersistStateHelper();
 
+            //this passes all contacts.
             List<User> users = _Repo.GetAllContacts(AuthenticatedUser);
             List<String> contacts = new List<String>();
 
             foreach (User u in users)
             {
-                contacts.Add(u.UserID);
+                //this will need to be User object once names included (JSON)
+                Clients.Caller.passContact(u.UserID);
             }
 
-            return contacts;
+           
 
         }
 
@@ -146,7 +147,6 @@ namespace InstantMessage
 
             //When conversation starts need to ensure group created and all participants are 
             //added
-
 
             Debug.WriteLine(message + "FIRST MESSAGE ");
 

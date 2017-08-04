@@ -340,15 +340,19 @@
         //generate list of contacts on the Navbar - this needs refactored on server
         //and client
         $('#newConversationNavSpan').click(function () {
-            chat.server.displayContacts()
-                .done(function (contactList) {
-                    for (var i = 0; i < contactList.length; i++) {
-                        //add links in heres
-                        html = '<a href="javascript:void(0)" id=' + contactList[i] + '>' + contactList[i] + '</a><br/>';
-                        console.log(html);
-                        $('#newConversationSideNav').append(html);
-                    }
-                }).fail(console.log("display failed"))
+            //initialise recipients
+            recipients = []; 
+            chat.server.displayContacts();
+                
+        })
+
+        $(function () {
+            chat.client.passContact = function (u) {
+                html = '<a href="javascript:void(0)" id=' +u + '>' + u + '</a><br/>';
+                console.log(html);
+                $('#newConversationSideNav').append(html);
+            }
+
         })
 
         //Gets contactId from nav side bar
