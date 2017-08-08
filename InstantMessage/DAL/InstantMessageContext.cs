@@ -7,7 +7,7 @@ namespace InstantMessage.DAL
 {
     public class InstantMessageContext : DbContext
     {
-
+        //hard codes the connection string?
         public InstantMessageContext() : base("InstantMessageContext")
         {
         }

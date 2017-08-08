@@ -10,26 +10,29 @@ namespace InstantMessage.DAL
 {
     public class DataRepository
     {
-        private InstantMessageContext _Data;
+        private InstantMessageContext _Context;
 
         public DataRepository()
         {
-             _Data = new InstantMessageContext();
+             _Context = new InstantMessageContext();    
            
         }
 
         public void saveChanges()
         {
-            _Data.SaveChangesAsync(); 
+            _Context.SaveChangesAsync(); 
         }
 
         public User getCurrentUser(string authenticatedUser)
         {
             // User currentUser = _Data.Users.Find(authenticatedUser);
-            User currentUser = _Data.Users.Where(u => u.UserID == authenticatedUser)
-                .FirstOrDefault();
+            //InvalidOperationException: There is already an open DataReader associated with this Command which must be closed first.
 
-            return currentUser;
+                User currentUser = _Context.Users.Where(u => u.UserID == authenticatedUser)
+               .FirstOrDefault();
+
+                return currentUser;
+           
         }
 
 
@@ -38,8 +41,8 @@ namespace InstantMessage.DAL
             try
             {
                 User currentUser = new User(authenticatedUser);
-                _Data.Users.Add(currentUser);
-                _Data.SaveChanges();
+                _Context.Users.Add(currentUser);
+                _Context.SaveChanges();
 
             }
             catch (Exception e)
@@ -52,7 +55,7 @@ namespace InstantMessage.DAL
 
         public List<Conversation> GetAllConversations(User currentUser)
         {
-            var results = _Data.Conversations.Where(c => c.Users.Select(u => u.UserID).Contains(currentUser.UserID));
+            var results = _Context.Conversations.Where(c => c.Users.Select(u => u.UserID).Contains(currentUser.UserID));
             
             List<Conversation> userCon = results.ToList();
 
@@ -63,26 +66,6 @@ namespace InstantMessage.DAL
 
             
         }
-
-        //public void addMessageToConversation(Message m, string conversationID )
-        //{
-        //    var conversation = _Data.Conversations.Find(m.Conversation);
-        //    conversation.Messages.Add(m);
-
-        //    try
-        //    {
-        //        _Data.SaveChanges();
-        //    }
-        //    catch (System.Data.Entity.Validation.DbEntityValidationException e)
-        //    {
-        //        Debug.WriteLine("exception caught dataRepo.addMessageToCon ");
-        //    }
-        //}
-
-        //public void AddMessageToUser(Message m)
-        //{
-            
-        //}
 
 
         public Message GenerateMessage(string message, User currentUser, Conversation con)
@@ -98,8 +81,8 @@ namespace InstantMessage.DAL
             con.LastMessage = ""+currentUser.UserID+": "+ message;
             con.Messages.Add(m);
 
-            _Data.Messages.Add(m);
-            _Data.SaveChanges();
+            _Context.Messages.Add(m);
+            _Context.SaveChanges();
 
              return m;
         }
@@ -108,7 +91,7 @@ namespace InstantMessage.DAL
         public List<User> GetAllContacts(string User)
         {
             List<User> contacts = new List<User>();
-            List<User> all = _Data.Users.ToList();
+            List<User> all = _Context.Users.ToList();
 
             foreach (User u in all)
             {
@@ -122,13 +105,13 @@ namespace InstantMessage.DAL
 
        public User getContact(string userID)
        {
-            return _Data.Users.Find(userID);
+            return _Context.Users.Find(userID);
        }
 
 
         public Conversation getConversation(int conversationID)
         {
-            return _Data.Conversations.Find(conversationID);
+            return _Context.Conversations.Find(conversationID);
         }
 
 
@@ -139,7 +122,7 @@ namespace InstantMessage.DAL
 
             foreach(string s in contacts)
             {
-                users.Add(_Data.Users.Find(s));
+                users.Add(_Context.Users.Find(s));
             }
             return users;
         }
@@ -183,11 +166,11 @@ namespace InstantMessage.DAL
                 newConversation.Users.Add(u);
             }
 
-            _Data.Conversations.Add(newConversation);
+            _Context.Conversations.Add(newConversation);
 
             try
             {
-                _Data.SaveChanges();
+                _Context.SaveChanges();
             }
             catch(System.Data.Entity.Validation.DbEntityValidationException e)
             {
@@ -225,14 +208,16 @@ namespace InstantMessage.DAL
         public List<Message> getMessages(Conversation con)
         {
 
-            // students = students.OrderBy(s => s.EnrollmentDate);
            // Conversation conInOrder = con.Messages.OrderBy(m => m.Sent);
-           // List<Message> messages = conInOrder.Messages.ToList();
-           //Appears to be naturally in order. 
+           //List<Message> messages = conInOrder.Messages.ToList();
+          
+            //Appears to be naturally in order. 
             List<Message> messages = con.Messages.ToList();
 
             return messages;
         }
+
+
 
             
             

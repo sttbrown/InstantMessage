@@ -13,8 +13,8 @@ namespace InstantMessage
     [Authorize]
     public class ChatHub : Hub
     {
-        private static DataRepository _Repo = new DataRepository();
-        private static string AuthenticatedUser;
+        private DataRepository _Repo = new DataRepository();
+        private string AuthenticatedUser;
         private User CurrentUser;
 
         
@@ -27,8 +27,11 @@ namespace InstantMessage
 
         private void PersistStateHelper()
         {
+            //Could the client potentially tamper with this Caller.UserId? 
+            //can an additional 'session' check be added here?
             AuthenticatedUser = Clients.Caller.UserId;
-            CurrentUser = _Repo.getCurrentUser(AuthenticatedUser); //not efficient?
+            CurrentUser = _Repo.getCurrentUser(AuthenticatedUser);
+
         }
 
 
@@ -38,7 +41,7 @@ namespace InstantMessage
             {
                 foreach(var con in CurrentUser.Conversations)
                 {
-                    //this is a hack that allows ConversationID which is 
+                    //this 'toString' is a hack that allows ConversationID which is 
                     //an incremental int to be used as a groupName which must
                     //be a string within SignalR.
                     string groupName = con.ConversationID.ToString();
@@ -101,14 +104,19 @@ namespace InstantMessage
                 {
                     Debug.WriteLine("isAuthorised = true");
                     //given authorisation return conversation history
-                    //to client. 
-
+                    //to client.
 
                     List<Message> messages = _Repo.getMessages(con);
 
+                    //implement some sort of batch loading here?
+
+                    //set OnScreen client variable here:::
+                    Clients.Caller.setOnScreenConversation(conId);
+
+
                     foreach(Message m in messages)
                     {
-                        Clients.Group("" + con.ConversationID).loadMessage(m.User.UserID, m.Content);
+                        Clients.Caller.loadMessage(m.User.UserID, m.Content);
                     }
                 }
                 else
@@ -179,7 +187,7 @@ namespace InstantMessage
 
             if (message != null)
             {
-                 Conversation con = _Repo.getConversation(conversationID);
+                Conversation con = _Repo.getConversation(conversationID);
 
                 Boolean isAuthorized = _Repo.CheckAuthorization(CurrentUser, con);
 
@@ -205,20 +213,19 @@ namespace InstantMessage
         private void UpdateMessageOnClient(Message conversationMessage, Conversation con)
         {
             string groupName = con.ConversationID.ToString();
-
-            //    //updates all connected clients 
-            //Clients.All.addNewMessageToPage(conversationMessage.User.UserID, conversationMessage.Content);
+            int conversationId = con.ConversationID;
 
             //Sanitise for display
             string htmlContent = System.Net.WebUtility.HtmlEncode(conversationMessage.Content);
 
-            //updates all connected clients within that group. 
-            Clients.Group(groupName).addNewMessageToPage(conversationMessage.User.UserID, htmlContent);
-
-            //Also informs all users that they have received new message
+            //Also inform all users that they have received new message
             Clients.Group(groupName).newMessageNotification(con.ConversationID);
             
             Clients.Group(groupName).updateConversations();
+
+            //if conversation is open?
+            //updates all connected clients within that group with message details 
+            Clients.Group(groupName).addNewMessageToPage(conversationMessage.User.UserID, htmlContent, conversationId);
 
         }
 

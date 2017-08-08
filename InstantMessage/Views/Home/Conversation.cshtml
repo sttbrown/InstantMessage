@@ -169,7 +169,6 @@
         //for development purposes leave nav open on load
         $(function () {
             openNav();
-
         })
 
         function openNewConversationNav() {
@@ -188,30 +187,33 @@
             document.getElementById("main").style.marginLeft = "0";
         }
 
-        //global variables accecptable?
+        //global variables need encapsulated..
         var recipients = [];
         var conversationID = null;
         var conversationName = null;
         var connected = false;
         var chat = $.connection.chatHub;
+        var onScreenConversation = null;
     
-
         //Add new message to page
-        chat.client.addNewMessageToPage = function (name, message) {
-            // Add the message to the page.
-            $('#discussion').append('<li><strong>' + htmlEncode(name)
-                + '</strong>: ' + htmlEncode(message) + '</li>');
+        chat.client.addNewMessageToPage = function (name, message, onScreen) {
+            // Add the message to the page if user has this conversation loaded
+            if (onScreenConversation == onScreen)
+            {
+                $('#discussion').append('<li><strong>' + htmlEncode(name)
+                    + '</strong>: ' + htmlEncode(message) + '</li>');
+            }
+            else
+            {
+                console.log("client does not have this conversation loaded");
+            }
+           
         };
 
-        
         chat.client.returnConversationDetails = function (conID) {
             conversationID = conID;
-            alert(conversationID + "conversationID");
+            console.log(conversationID + "conversationID");
         }
-
-        chat.client.display = function (contact) {
-        };
-
 
         //Start connection
         $.connection.hub.start()
@@ -221,9 +223,6 @@
                 console.log("success");
                 connected = true;
                 setConnectionStatus();
-                //anytime conversations reloaded make sure 
-               // $("div").remove(".conItem");
-               // chat.server.getAllConversations();
                 getAllConversations();
                 // gotAnyNew messages?
             }).fail(function () {
@@ -293,6 +292,14 @@
 
         })
 
+        $(function () {
+            chat.client.setOnScreenConversation = function (conId) {
+                onScreenConversation = conId;
+            }
+        })
+
+
+
         //loading message function
         $(function () {
             chat.client.loadMessage = function (user, content) {
@@ -303,9 +310,9 @@
                 $('#discussion').append('<li><strong>' + htmlEncode(user)
                     + '</strong>: ' + htmlEncode(content) + '</li>');
                 console.log(conversationID + "convo id variable");
-
             }
         })
+
         //generate list of conversations on side bar
         $(function () {
             chat.client.AddExistingConversation = function (c) {
@@ -334,7 +341,6 @@
         function goToMessage() {
             console.log("go to message");
            // chat.server.openConversation(conId);
-
         }
             
         //generate list of contacts on the Navbar - this needs refactored on server
@@ -342,8 +348,7 @@
         $('#newConversationNavSpan').click(function () {
             //initialise recipients
             recipients = []; 
-            chat.server.displayContacts();
-                
+            chat.server.displayContacts();         
         })
 
         $(function () {
@@ -352,7 +357,6 @@
                 console.log(html);
                 $('#newConversationSideNav').append(html);
             }
-
         })
 
         //Gets contactId from nav side bar
@@ -419,9 +423,6 @@
 
         $(function () {
             chat.client.updateConversations = function () {
-                //clear convo side nav ..
-              //  $("div").remove(".conItem"); 
-               // chat.server.getAllConversations();
                 getAllConversations();
             } 
         })
