@@ -256,8 +256,18 @@ namespace InstantMessage
 
         }
 
+    
+        public void Search(string searchFor)
+        {
+            PersistStateHelper();
 
-    public override Task OnReconnected()
+            //Not implemented.
+
+
+        }
+
+
+        public override Task OnReconnected()
     {
             PersistStateHelper();
             return base.OnReconnected();

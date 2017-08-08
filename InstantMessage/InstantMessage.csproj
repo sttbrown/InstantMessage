@@ -202,6 +202,7 @@
     <Compile Include="Controllers\ConversationsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="DAL\DatabaseAccess.cs" />
     <Compile Include="DAL\DataRepository.cs" />
     <Compile Include="DAL\InstantMessageContext.cs" />
     <Compile Include="DAL\MessageInitializer.cs" />

@@ -50,7 +50,7 @@ namespace InstantMessage.DAL
                Console.WriteLine("problem"); //do something else?
             }
 
-            return;
+           
         }
 
         public List<Conversation> GetAllConversations(User currentUser)
@@ -215,6 +215,20 @@ namespace InstantMessage.DAL
             List<Message> messages = con.Messages.ToList();
 
             return messages;
+        }
+
+        public List<Message> Search(string searchFor, User Current)
+        {
+            //NOT CORRECT::: 
+
+            char[] delimiters = { ' ', ',', '.', ':', '\t' };
+
+            var searchWords = searchFor.Split(delimiters);
+
+            var results = _Context.Messages.Where(r => searchWords.Any(s => r.Content.Contains(s)));
+
+            return results.ToList();
+            
         }
 
 
