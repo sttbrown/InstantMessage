@@ -168,6 +168,10 @@ namespace InstantMessage
                 //creates new signalR group so that participants are
                 //notified
                 CreateNewGroup(con);
+               
+                //PROBLEM
+                //need to load conversation onto clients screen
+                Clients.Caller.setOnScreenConversation(con.ConversationID);
 
                 Message conversationMessage = _Repo.GenerateMessage(message, CurrentUser, con);
                 UpdateMessageOnClient(conversationMessage, con);

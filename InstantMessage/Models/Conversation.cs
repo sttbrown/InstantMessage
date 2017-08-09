@@ -25,7 +25,7 @@ namespace InstantMessage.Models
         public string LastMessage { get; set; }
 
         //Is this a good idea? seems as though it might be 
-        //[Index("LastEdited")]
+        [Index("LastEdited")]
         public DateTime LastEdited { get; set; }
         
         [JsonIgnore]

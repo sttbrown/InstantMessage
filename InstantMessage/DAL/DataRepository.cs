@@ -14,8 +14,7 @@ namespace InstantMessage.DAL
 
         public DataRepository()
         {
-             _Context = new InstantMessageContext();    
-           
+             _Context = new InstantMessageContext();             
         }
 
         public void saveChanges()
@@ -31,8 +30,7 @@ namespace InstantMessage.DAL
                 User currentUser = _Context.Users.Where(u => u.UserID == authenticatedUser)
                .FirstOrDefault();
 
-                return currentUser;
-           
+                return currentUser;   
         }
 
 
@@ -43,28 +41,32 @@ namespace InstantMessage.DAL
                 User currentUser = new User(authenticatedUser);
                 _Context.Users.Add(currentUser);
                 _Context.SaveChanges();
-
             }
             catch (Exception e)
             {
                Console.WriteLine("problem"); //do something else?
-            }
-
-           
+            } 
         }
 
         public List<Conversation> GetAllConversations(User currentUser)
         {
             var results = _Context.Conversations.Where(c => c.Users.Select(u => u.UserID).Contains(currentUser.UserID));
-            
-            List<Conversation> userCon = results.ToList();
 
+            List<Conversation> userCon = results.ToList();
             userCon.Sort((x, y) => x.LastEdited.CompareTo(y.LastEdited));
             userCon.Reverse(); //is this necessary? could iterate through backwards in chathub instead?
 
             return userCon;
 
-            
+            //Is this enough to activate the Last Edited Index?
+            //var userCon = results.OrderBy(c => c.LastEdited);
+            //List<Conversation> cons = new List<Conversation>();
+            //if (userCon != null)
+            //{
+            //    cons = userCon.ToList();
+            //}
+
+            //return cons;      
         }
 
 

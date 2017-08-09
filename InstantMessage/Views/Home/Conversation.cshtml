@@ -83,8 +83,10 @@
 </style>
 
 <div id="mySideNav" class="sidenav">
-         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-        <h5>Conversations</h5>
+    <!--
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    -->
+     <h5>Conversations</h5>
 </div>
 
 <div id="newConversationSideNav" class="sidenav">
@@ -122,7 +124,6 @@
         <span id=newMessageNotificationId></span>
         <span style="font-size:20px" id="newMessageNotificationSpan">Notifications</span>
     </div>
-    <!-- Use any element to open the sidenav -->
     <div>
         <span style="font-size:30px;cursor:pointer" id="newConversationNavSpan" onclick="openNewConversationNav()">&#9776; New Conversation</span>
     </div>
@@ -132,7 +133,6 @@
     <div id="connectionStatus">
         <span style="font-size:15px" id="connectionSpan">&#9776; Connection Status: Not Connected </span>
     </div>
-
 
     <div id="conversation-container">
        <div class="flex-item" id="conversation-content" style="overflow: scroll; width: 500px; height: 200px;">
@@ -144,8 +144,7 @@
             <input type="text" id="message" />
             <input type="button" id="sendmessage" value="Send" />
         </div>
-    </div>
-   
+    </div>  
 </div>
 
 
@@ -176,46 +175,31 @@
             document.getElementById("main").style.marginLeft = "250px";
         }
 
-        /* Set the width of the side navigation to 0 and the left margin of the page content to 0 */
+        /*NOT IN USE Set the width of the side navigation to 0 and the left margin of the page content to 0 */
         function closeNav() {
             document.getElementById("mySideNav").style.width = "0";
-            document.getElementById("main").style.marginLeft = "0";
+            document.getElementById("main").style.marginLeft = "250px";
         }
 
         function closeNewConversationNav() {
             document.getElementById("newConversationSideNav").style.width = "0";
-            document.getElementById("main").style.marginLeft = "0";
+            document.getElementById("main").style.marginLeft = "250px";
         }
 
-        //global variables need encapsulated..
+        /*
+        Global Variables (Should be encapsulated?)
+        */
         var recipients = [];
         var conversationID = null;
         var conversationName = null;
         var connected = false;
         var chat = $.connection.chatHub;
         var onScreenConversation = null;
-    
-        //Add new message to page
-        chat.client.addNewMessageToPage = function (name, message, onScreen) {
-            // Add the message to the page if user has this conversation loaded
-            if (onScreenConversation == onScreen)
-            {
-                $('#discussion').append('<li><strong>' + htmlEncode(name)
-                    + '</strong>: ' + htmlEncode(message) + '</li>');
-            }
-            else
-            {
-                console.log("client does not have this conversation loaded");
-            }
-           
-        };
 
-        chat.client.returnConversationDetails = function (conID) {
-            conversationID = conID;
-            console.log(conversationID + "conversationID");
-        }
 
-        //Start connection
+        /*
+        Start Up and Reconnection 
+        */
         $.connection.hub.start()
             .done(
             $.connection.hub.logging = true,
@@ -240,8 +224,8 @@
                         console.log("success");
                         connected = true;
                         setConnectionStatus();
-                      //  $("div").remove(".conItem");
-                       // chat.server.getAllConversations();
+                        //  $("div").remove(".conItem");
+                        // chat.server.getAllConversations();
                         getAllConversations();
                         // gotAnyNew messages?
                     }).fail(function () {
@@ -252,6 +236,9 @@
             }, 5000); // Restart connection after 5 seconds.
         });
 
+        /*
+        Functions Called on Connection/Reconnection
+        */
         function getAllConversations() {
             $(".conItem").remove();
             chat.server.getAllConversations();
@@ -263,34 +250,68 @@
 
         function setConnectionStatus() {
             console.log("in connect method, connected = " + connected);
-            if (connected == true)
-            {
+            if (connected == true) {
                 $("#connectionSpan").text("");
                 $("#connectionSpan").text("Connection Status: Connected!");
             }
-            else if (connected == false)
-            {
+            else if (connected == false) {
                 $("#connectionSpan").text("");
                 $("#connectionSpan").text("Connection Status: No Connection");
             }
         }
 
-        //get conId from <a href>, pass to server method
+        /*
+            Loading Conversation Side Bar
+        */
+
+        //generate a list of conversations in side bar upon click
+        $('#existingConversationNavSpan').click(function () {
+            getAllConversations();
+        })
+
+        //Generate list of conversations on side bar
+        $(function () {
+            chat.client.AddExistingConversation = function (c) {
+                //append to page
+                html = '<div class="conItem"><a href="javascript:void(0)" class="conItem" id="' + c.ConversationID + '", data-address="' + c.Name + '">' + c.Name + '</a><br/>' +
+                    '<p>"' + c.LastMessage + '", ' + c.LastEdited + ',  </p><br/></div>';
+                $('#mySideNav').append(html);
+                console.log(html);
+            }
+        })
+
+
+
+        /*
+        Displaying Conversations
+        */
+        chat.client.returnConversationDetails = function (conID) {
+            conversationID = conID;
+            console.log(conversationID + "conversationID");
+        }
+
         $('#mySideNav').on('click', 'a', function (event) {
             var conId = $(this).attr('id');
             var conName = $(this).attr('data-address');
             console.log("var conName is... " + conName);
+            loadConversation(conId, conName);
+        })
+
+        function loadConversation(conId, conName) {
+            conversationID = conId;
             //set conversationId for any new messages. 
             conversationID = conId;
+            onScreenConversation = conId
             //reset notifications since user has accessed sideNav
             $('#newMessageNotificationSpan').text("Notifications:");
-
             $('#discussion').empty();
             $('#conversationHeading').text("");
-            $('#conversationHeading').text('Details:  ' + conName);
-            chat.server.openConversation(conId);
 
-        })
+            if (conName !== undefined) {
+                $('#conversationHeading').text('Details:  ' + conName);
+            }
+            chat.server.openConversation(conId);
+        }
 
         $(function () {
             chat.client.setOnScreenConversation = function (conId) {
@@ -298,110 +319,16 @@
             }
         })
 
-
-
-        //loading message function
         $(function () {
-            chat.client.loadMessage = function (user, content) {
-                makeConvDivVisible();
-                console.log(content);
-                console.log(user);
-                // Add the message to the page.
-                $('#discussion').append('<li><strong>' + htmlEncode(user)
-                    + '</strong>: ' + htmlEncode(content) + '</li>');
-                console.log(conversationID + "convo id variable");
+            chat.client.updateConversations = function () {
+                getAllConversations();
             }
         })
 
-        //generate list of conversations on side bar
-        $(function () {
-            chat.client.AddExistingConversation = function (c) {
-                //append to page
-                html = '<div class="conItem"><a href="javascript:void(0)" class="conItem" id="' + c.ConversationID + '", data-address="' + c.Name + '">' + c.Name + '</a><br/>' +
-                    '<p>"'+c.LastMessage+'", '+c.LastEdited+',  </p><br/></div>';
-                $('#mySideNav').append(html);
-                console.log(html);
-            }
-        })
-  
-        //generate a list of conversations in side bar upon click
-        $('#existingConversationNavSpan').click(function () {
-            getAllConversations();
-        })
-        
-        $(function () {
-            chat.client.newMessageNotification = function (conId) {
-                html = '<a href="javascript:void(0)" id="' + conId + '" onclick="goToMessage()">click here to view conversation</a><br/>';
 
-                $('#newMessageNotificationSpan').text("You have a new message");
-                //do something with this.
-            }
-        })
-
-        function goToMessage() {
-            console.log("go to message");
-           // chat.server.openConversation(conId);
-        }
-            
-        //generate list of contacts on the Navbar - this needs refactored on server
-        //and client
-        $('#newConversationNavSpan').click(function () {
-            //initialise recipients
-            recipients = []; 
-            chat.server.displayContacts();         
-        })
-
-        $(function () {
-            chat.client.passContact = function (u) {
-                html = '<a href="javascript:void(0)" id=' +u + '>' + u + '</a><br/>';
-                console.log(html);
-                $('#newConversationSideNav').append(html);
-            }
-        })
-
-        //Gets contactId from nav side bar
-        $('#newConversationSideNav').on('click', 'a', function (event) {
-            var contactId = $(this).attr('id');
-            console.log(contactId);
-            $('#contact-block').append(contactId + " ")
-            recipients.push(contactId);
-            if (recipients.length == 2) {
-                $('#myModal').modal('show');
-                conversationName = $('#conName').val();
-            }
-        })
-
-        $('#select').click(function () {
-            chat.server.displayContacts()
-                .done(function (contactList) {
-                    for (var i = 0; i < contactList.length; i++) {
-                        $('#contactselect').append('<option>' + contactList[i]
-                            + '</option>');
-                    }
-                })
-        })
-
-        $('#display').click(function () {
-            chat.server.displayContacts()
-                .done(function (contactList) {
-                    for (var i = 0; i < contactList.length; i++) {
-                        $('#contacts').append('<li>' + ' ' + contactList[i]
-                            + '</li>');
-                    }
-                    $('<input type="checkbox" />').prependTo($("#contacts").children('li'));
-                })
-        })
-
-        $('#add-contact').click(function () {
-            var value = $('#contactselect').find(":selected").text()
-            $('#contact-block').append(value + " ")
-            recipients.push(value);
-            if (recipients.length == 2) {
-                $('#myModal').modal('show');
-                conversationName = $('#conName').val();
-            }
-            
-        })     
+        /*
+        Loading, Displaying, Sending Messages
+        */
 
         $(function () {
             $('#sendmessage').click(function () {
@@ -421,11 +348,92 @@
             })
         })
 
+        //load message function
         $(function () {
-            chat.client.updateConversations = function () {
-                getAllConversations();
-            } 
+            chat.client.loadMessage = function (user, content) {
+                makeConvDivVisible();
+                console.log(content);
+                console.log(user);
+                // Add the message to the page.
+                $('#discussion').append('<li><strong>' + htmlEncode(user)
+                    + '</strong>: ' + htmlEncode(content) + '</li>');
+            }
         })
+
+        //Add new sent message to page
+        chat.client.addNewMessageToPage = function (name, message, onScreen) {
+            // Add the message to the page if user has this conversation loaded
+            if (onScreenConversation == onScreen) {
+                $('#discussion').append('<li><strong>' + htmlEncode(name)
+                    + '</strong>: ' + htmlEncode(message) + '</li>');
+            }
+            else {
+                console.log("client does not have this conversation loaded");
+            }
+        };
+
+        $(function () {
+            chat.client.newMessageNotification = function (conId) {
+                html = '<a href="javascript:void(0)" id="' + conId + '" onclick="goToMessage()">click here to view conversation</a><br/>';
+
+                $('#newMessageNotificationSpan').text("You have a new message");
+                //do something with this.
+            }
+        })
+
+        function goToMessage() {
+            console.log("go to message");
+            // chat.server.openConversation(conId);
+        }
+
+
+        /*
+        Displaying Contacts, Starting New Conversation
+        */
+        $('#newConversationNavSpan').click(function () {
+            //initialise recipients
+            recipients = [];
+            $(".contactItem").remove();
+            $('#contact-block').text("");
+            chat.server.displayContacts();         
+        })
+
+        $(function () {
+            chat.client.passContact = function (u) {
+                html = '<a href="javascript:void(0)" class="contactItem" id=' + u + '>' + u + '<br/></a>';
+                console.log(html);
+                $('#newConversationSideNav').append(html);
+            }
+        })
+
+        //Gets contactId from nav side bar
+        $('#newConversationSideNav').on('click', 'a', function (event) {
+            var contactId = $(this).attr('id');
+            console.log(contactId);
+            if (contactId !== undefined) {
+                $('#contact-block').append(contactId + " ")
+                recipients.push(contactId);
+            }
+            if (recipients.length == 2) {
+                $('#myModal').modal('show');
+                conversationName = $('#conName').val();
+            }
+        })
+
+
+        $('#display').click(function () {
+            chat.server.displayContacts()
+                .done(function (contactList) {
+                    for (var i = 0; i < contactList.length; i++) {
+                        $('#contacts').append('<li>' + ' ' + contactList[i]
+                            + '</li>');
+                    }
+                    $('<input type="checkbox" />').prependTo($("#contacts").children('li'));
+                })
+        })
+     
+
+       
 
         $(function () {
            // makeConvDivInvisible();   
