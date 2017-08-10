@@ -92,9 +92,9 @@ namespace InstantMessage
             Debug.WriteLine("The ConID is " + conId);
             //server side check if user is authorised to view that
             //conversation
-           Conversation con= _Repo.getConversation(conId);
+            Conversation con = _Repo.getConversation(conId);
 
-            Boolean isAuthorized= false;
+            Boolean isAuthorized = false;
 
             if (con != null)
             {
@@ -111,13 +111,19 @@ namespace InstantMessage
                     //implement some sort of batch loading here?
 
                     //set OnScreen client variable here:::
-                    Clients.Caller.setOnScreenConversation(conId);
+                    Clients.Caller.setOnScreenConversation(con.ConversationID);
 
 
-                    foreach(Message m in messages)
+                    foreach (Message m in messages)
                     {
-                        Clients.Caller.loadMessage(m.User.UserID, m.Content);
+
+                        Clients.Caller.loadMessage(m.User.UserID, m, con.ConversationID);
                     }
+
+                    //add condition: if loadMessage Invoked Correctly 
+                    //MAKE SURE ASYNCHRONOUS!
+
+                    Clients.Caller.finishedLoadingConversation(con.ConversationID);
                 }
                 else
                 {
@@ -128,8 +134,8 @@ namespace InstantMessage
         }
 
 
-       
-        public void DisplayContacts()
+
+        public void GetContacts()
         {
             PersistStateHelper();
 
@@ -140,9 +146,9 @@ namespace InstantMessage
             foreach (User u in users)
             {
                 //this will need to be User object once names included (JSON)
-                Clients.Caller.passContact(u.UserID);
+                Clients.Caller.PassContact(u);
             }
-
+            Clients.Caller.ShowContacts();
            
 
         }
@@ -169,9 +175,13 @@ namespace InstantMessage
                 //notified
                 CreateNewGroup(con);
                
-                //PROBLEM
+                
                 //need to load conversation onto clients screen
                 Clients.Caller.setOnScreenConversation(con.ConversationID);
+
+                string groupName = con.ConversationID.ToString();
+
+                Clients.Group(groupName).NewConversationCreated(con);
 
                 Message conversationMessage = _Repo.GenerateMessage(message, CurrentUser, con);
                 UpdateMessageOnClient(conversationMessage, con);
@@ -220,16 +230,17 @@ namespace InstantMessage
             int conversationId = con.ConversationID;
 
             //Sanitise for display
-            string htmlContent = System.Net.WebUtility.HtmlEncode(conversationMessage.Content);
+           // string htmlContent = System.Net.WebUtility.HtmlEncode(conversationMessage.Content);
 
             //Also inform all users that they have received new message
             Clients.Group(groupName).newMessageNotification(con.ConversationID);
             
+
             Clients.Group(groupName).updateConversations();
 
-            //if conversation is open?
+            
             //updates all connected clients within that group with message details 
-            Clients.Group(groupName).addNewMessageToPage(conversationMessage.User.UserID, htmlContent, conversationId);
+            Clients.Group(groupName).transferMessage(conversationMessage, conversationMessage.User.UserID, conversationId);
 
         }
 
@@ -257,6 +268,8 @@ namespace InstantMessage
            {
                 Clients.Caller.AddExistingConversation(c);
            }
+            string complete = "complete";
+            Clients.Caller.AllConversationsAdded();
 
         }
 

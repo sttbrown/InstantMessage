@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Web.Security;
 
@@ -24,9 +25,12 @@ namespace InstantMessage.Models
         public string UserID { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-   
+
+        [JsonIgnore]
         public ICollection<Connection> Connections { get; set; }
+        [JsonIgnore]
         public virtual ICollection<Conversation> Conversations { get; set; }
+        [JsonIgnore]
         public virtual ICollection<Message> Messages { get; set; }
 
     }

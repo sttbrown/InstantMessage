@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -27,10 +28,12 @@ namespace InstantMessage.Models
 
         //a message belongs to a single user
         //public string UserID { get; set; }
+        [JsonIgnore]
         public virtual User User { get; set; }
 
         //a message belongs to a single Conversation
-       // public int ConversationID { get; set; } //not necessary?
+        // public int ConversationID { get; set; } //not necessary?
+        [JsonIgnore]
         public virtual Conversation Conversation { get; set; }  
 
     }
