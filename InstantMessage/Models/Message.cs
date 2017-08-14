@@ -21,7 +21,6 @@ namespace InstantMessage.Models
         [Key]
         [System.ComponentModel.DataAnnotations.Schema.DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int MessageID { get; set; }
-
         public string Content { get; set; }
         public DateTime Sent { get; set; }
         public Boolean Received { get; set; }

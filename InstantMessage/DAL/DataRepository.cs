@@ -52,11 +52,21 @@ namespace InstantMessage.DAL
         {
             var results = _Context.Conversations.Where(c => c.Users.Select(u => u.UserID).Contains(currentUser.UserID));
 
-            List<Conversation> userCon = results.ToList();
-            userCon.Sort((x, y) => x.LastEdited.CompareTo(y.LastEdited));
-            userCon.Reverse(); //is this necessary? could iterate through backwards in chathub instead?
+            if (results != null)
+            {
+                List<Conversation> userCon = results.ToList();
+                userCon.Sort((x, y) => x.LastEdited.CompareTo(y.LastEdited));
+                userCon.Reverse();
+                return userCon;
+            }
+            else
+            {
+                return null;
+            }
 
-            return userCon;
+           //is this necessary? could iterate through backwards in chathub instead?
+
+            
 
             //Is this enough to activate the Last Edited Index?
             //var userCon = results.OrderBy(c => c.LastEdited);
@@ -80,7 +90,7 @@ namespace InstantMessage.DAL
 
             con.LastEdited = DateTime.Now;
             //perhaps last message and last message sender should be separated at level of models..
-            con.LastMessage = ""+currentUser.UserID+": "+ message;
+            con.LastMessage = ""+currentUser.UserID+": "+ m.Content;
             con.Messages.Add(m);
 
             _Context.Messages.Add(m);
@@ -167,6 +177,8 @@ namespace InstantMessage.DAL
             {
                 newConversation.Users.Add(u);
             }
+
+            newConversation.LastEdited = DateTime.Now;
 
             _Context.Conversations.Add(newConversation);
 

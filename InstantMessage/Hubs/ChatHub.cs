@@ -54,20 +54,12 @@ namespace InstantMessage
             }
         }
 
-        private void CreateNewGroup(Conversation con)
-        {
-            if (CurrentUser != null)
-            {
-                string groupName = con.ConversationID.ToString();
-                Groups.Add(Context.ConnectionId, groupName);
-            }
-            
-        }
-
+        
         public override Task OnConnected()
         {
             if (Context.User.Identity.IsAuthenticated)
             {
+                //I'm not sure if this is secure?
                 Clients.Caller.UserId = Context.User.Identity.GetUserName();
                 Clients.Caller.initialized();
                 //empty method "initialized" ensures that client is passed userID to persist state
@@ -89,9 +81,7 @@ namespace InstantMessage
         public void OpenConversation(int conId)
         {
             PersistStateHelper();
-            Debug.WriteLine("The ConID is " + conId);
-            //server side check if user is authorised to view that
-            //conversation
+
             Conversation con = _Repo.getConversation(conId);
 
             Boolean isAuthorized = false;
@@ -121,7 +111,7 @@ namespace InstantMessage
                     }
 
                     //add condition: if loadMessage Invoked Correctly 
-                    //MAKE SURE ASYNCHRONOUS!
+                    //MAKE SURE ASYNCHRONOUS
 
                     Clients.Caller.finishedLoadingConversation(con.ConversationID);
                 }
@@ -132,7 +122,6 @@ namespace InstantMessage
                 }
             }
         }
-
 
 
         public void GetContacts()
@@ -150,19 +139,14 @@ namespace InstantMessage
             }
             Clients.Caller.ShowContacts();
            
-
         }
 
 
         public void SendFirstMessage(string message, List<string> contacts, string conversationName)
         {
             //Is user authorised to contact these Users??
-            //carry out sanitation of all user input.
 
-            //When conversation starts need to ensure group created and all participants are 
-            //added
-
-            Debug.WriteLine(message + "FIRST MESSAGE ");
+            Debug.WriteLine(conversationName  + "CONVERSATION NAME ,  FIRST MESSAGE ");
 
             PersistStateHelper();
 
@@ -173,24 +157,58 @@ namespace InstantMessage
 
                 //creates new signalR group so that participants are
                 //notified
-                CreateNewGroup(con);
-               
-                
+                // CreateNewGroup(con);
+
+                //Make other users in new conversation join group.
+                //InformUsersNewConversation();
                 //need to load conversation onto clients screen
+
                 Clients.Caller.setOnScreenConversation(con.ConversationID);
 
-                string groupName = con.ConversationID.ToString();
-
-                Clients.Group(groupName).NewConversationCreated(con);
-
                 Message conversationMessage = _Repo.GenerateMessage(message, CurrentUser, con);
-                UpdateMessageOnClient(conversationMessage, con);
+
+                PassNewConversationToClients(con, conversationMessage);
+
+              //  UpdateMessageOnClient(conversationMessage, con);
+
+
+                
 
             }
             else
             {
                 Debug.WriteLine("message is null");
             }
+        }
+
+        private void PassNewConversationToClients(Conversation con, Message message)
+        {
+            foreach(User u in con.Users)
+            { 
+                Clients.User(u.UserID).receiveNewConversation(con);
+               
+               // Clients.User(u.UserID).newMessageNotification(con.ConversationID);
+                Clients.User(u.UserID).messageHandler(message, u.UserID, con.ConversationID);
+            }
+
+        }
+
+        public void JoinGroupRemotely(string conID)
+        {
+            //concerns about race conditions here?
+            PersistStateHelper();
+            string groupName = conID;
+            Groups.Add(Context.ConnectionId, groupName);
+        }
+
+        private void CreateNewGroup(Conversation con)
+        {
+            if (CurrentUser != null)
+            {
+                string groupName = con.ConversationID.ToString();
+                Groups.Add(Context.ConnectionId, groupName);
+            }
+
         }
 
         public void Send(string message, int conversationID)
@@ -208,14 +226,15 @@ namespace InstantMessage
                 if (isAuthorized == true)
                 {
                     Message conversationMessage = _Repo.GenerateMessage(message, CurrentUser, con);
-                    UpdateMessageOnClient(conversationMessage, con);
+
+                    UpdateClient(conversationMessage, con);
 
                 }
                 else
                 {
                     Debug.WriteLine("User not authorised");
+                    //add Client Method to communicate this
                 }
-
             }
             else
             {
@@ -223,26 +242,37 @@ namespace InstantMessage
             }
         }
 
-
-        private void UpdateMessageOnClient(Message conversationMessage, Conversation con)
+        private void UpdateClient(Message conversationMessage, Conversation con)
         {
             string groupName = con.ConversationID.ToString();
-            int conversationId = con.ConversationID;
 
-            //Sanitise for display
-           // string htmlContent = System.Net.WebUtility.HtmlEncode(conversationMessage.Content);
+            Clients.Caller.setOnScreenConversation(con.ConversationID);
 
-            //Also inform all users that they have received new message
-            Clients.Group(groupName).newMessageNotification(con.ConversationID);
+            //updates conversation panel and conversation object
+            Clients.Group(groupName).updateExistingConversation(con);
             
-
-            Clients.Group(groupName).updateConversations();
-
-            
-            //updates all connected clients within that group with message details 
-            Clients.Group(groupName).transferMessage(conversationMessage, conversationMessage.User.UserID, conversationId);
+            //sends message to client
+            Clients.Group(groupName).messageHandler(conversationMessage, conversationMessage.User.UserID, con.ConversationID);
 
         }
+
+
+        //this is back up for now
+        //private void UpdateMessageOnClient(Message conversationMessage, Conversation con)
+        //{
+        //    string groupName = con.ConversationID.ToString();
+        //    int conversationId = con.ConversationID;
+
+        //    //Sanitise for display
+        //    // string htmlContent = System.Net.WebUtility.HtmlEncode(conversationMessage.Content);
+
+        //    //Also inform all users that they have received new message
+        //    Clients.Group(groupName).newMessageNotification(con.ConversationID);
+            
+        //    //updates all connected clients within that group with message details 
+        //    Clients.Group(groupName).transferMessage(conversationMessage, conversationMessage.User.UserID, conversationId);
+        //    //Clients.Group(groupName).updateConversations(); //this is now done with transfermessage
+        //}
 
 
         private Conversation StartConversation(List<string> contacts, string conversationName)
@@ -262,18 +292,23 @@ namespace InstantMessage
         {
             PersistStateHelper();
 
+
             List<Conversation> conversations = _Repo.GetAllConversations(CurrentUser);            
           
-           foreach (Conversation c in conversations)
-           {
-                Clients.Caller.AddExistingConversation(c);
-           }
-            string complete = "complete";
-            Clients.Caller.AllConversationsAdded();
+            if (conversations != null)
+            {
+                foreach (Conversation c in conversations)
+                {
+                    Clients.Caller.AddExistingConversation(c);
+                }
 
+                Clients.Caller.AllConversationsAdded();
+
+            }
         }
 
-    
+
+
         public void Search(string searchFor)
         {
             PersistStateHelper();
