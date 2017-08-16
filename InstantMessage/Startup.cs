@@ -11,6 +11,7 @@ namespace InstantMessage
         {
             ConfigureAuth(app);
             app.MapSignalR();
+            GlobalHost.HubPipeline.AddModule(new RejoingGroupPipelineModule());
             GlobalHost.HubPipeline.RequireAuthentication();
             //ensures no hub methods are accessible to users without authentication
         }

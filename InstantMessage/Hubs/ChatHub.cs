@@ -7,10 +7,12 @@ using InstantMessage.Models;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 
 namespace InstantMessage
 {
-    [Authorize]
+    [RequireHttps]
+    [Microsoft.AspNet.SignalR.Authorize]
     public class ChatHub : Hub
     {
         private DataRepository _Repo = new DataRepository();
