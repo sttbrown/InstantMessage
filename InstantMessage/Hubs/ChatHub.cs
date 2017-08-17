@@ -68,6 +68,8 @@ namespace InstantMessage
 
                 PersistStateHelper();
                 InitializeGroups();
+                Clients.Caller.updateUser(AuthenticatedUser);
+
 
             }
             else
@@ -79,6 +81,14 @@ namespace InstantMessage
             return base.OnConnected();
         }
 
+
+        public void GetUser()
+        {
+            PersistStateHelper();
+            Clients.Caller.updateUser(AuthenticatedUser);
+
+          //  return AuthenticatedUser;
+        }
 
         public void OpenConversation(int conId)
         {

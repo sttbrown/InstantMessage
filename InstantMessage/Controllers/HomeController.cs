@@ -37,7 +37,7 @@ namespace InstantMessage.Controllers
             {
                 _repo.createNewUser(current);
 
-                return View("NewUser");
+                return View("Conversation");
             }
             else
             {
@@ -53,6 +53,12 @@ namespace InstantMessage.Controllers
 
                 return View("Conversation");
             }
+        }
+
+        [Authorize]
+        public ActionResult Main()
+        {
+            return View();
         }
 
 

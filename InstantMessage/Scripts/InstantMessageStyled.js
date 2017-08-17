@@ -1,22 +1,22 @@
 ﻿///Auxillary Functions///
 
-function makeConvDivInvisible() {
-    var conDiv = document.getElementById('conversation-container');
-    var content = document.getElementById('conversation-content');
-    var message = document.getElementById('message-div');
-    content.style.display = 'none';
-    message.style.display = 'none';
-    conDiv.style.display = 'none';
-}
+//function makeConvDivInvisible() {
+//    var conDiv = document.getElementById('conversation-container');
+//    var content = document.getElementById('conversation-content');
+//    var message = document.getElementById('message-div');
+//    content.style.display = 'none';
+//    message.style.display = 'none';
+//    conDiv.style.display = 'none';
+//}
 
-function makeConvDivVisible() {
-    var conDiv = document.getElementById('conversation-container');
-    var content = document.getElementById('conversation-content');
-    var message = document.getElementById('message-div');
-    content.style.display = 'block';
-    message.style.display = 'block';
-    conDiv.style.display = 'block';
-}
+//function makeConvDivVisible() {
+//    var conDiv = document.getElementById('conversation-container');
+//    var content = document.getElementById('conversation-content');
+//    var message = document.getElementById('message-div');
+//    content.style.display = 'block';
+//    message.style.display = 'block';
+//    conDiv.style.display = 'block';
+//}
 
 function htmlEncode(value) {
     var encodedValue = $('<div />').text(value).html();
@@ -25,16 +25,16 @@ function htmlEncode(value) {
 
 
 /* Set the width of the side navigation to 250px and the left margin of the page content to 250px */
-function openNav() {
-    document.getElementById("mySideNav").style.width = "350px";
-    document.getElementById("main").style.marginLeft = "350px";
+//function openNav() {
+//    document.getElementById("mySideNav").style.width = "350px";
+//    document.getElementById("main").style.marginLeft = "350px";
 
-}
+//}
 
 //for development purposes leave nav open on load
-$(function () {
-    openNav();
-})
+//$(function () {
+//    openNav();
+//})
 
 function openNewConversationNav() {
     document.getElementById("newConversationSideNav").style.width = "350px";
@@ -122,7 +122,8 @@ $.connection.hub.disconnected(function () {
             function () {
                 console.log("success");
                 CONNECTED = true;
-                setConnectionStatus();
+              //  setConnectionStatus();
+               
             }).fail(function () {
                 CONNECTED = false;
                 setConnectionStatus();
@@ -131,10 +132,14 @@ $.connection.hub.disconnected(function () {
     }, 5000); // Restart connection after 5 seconds.
 });
 
-$(function () {
-     CHAT.server.getUser().done()
+/*Test functions. 
+*/
 
+$('#clear-messages').click(function () {
+    $('#discussion').empty();
 })
+
+
 
 
 $('#logOffButton').click(function () {
@@ -146,10 +151,6 @@ $('#logOffButton').click(function () {
 Functions Called on Connection/Reconnection
 */
 
-function getAllConversations() {
-    $(".conItem").remove();
-    CHAT.server.getAllConversations();
-}
 
 function setConnectionStatus() {
     if (CONNECTED == true) {
@@ -163,14 +164,133 @@ function setConnectionStatus() {
 }
 
 /*
-    Loading Conversation Side Bar
+   Conversation Side Bar
 */
 
+CHAT.client.updateUser = function (user) {
+    console.log(user);
+    //add User variable here
+    $("#username").text(user);
+}
+
 //generate a list of conversations in side bar upon click
-$('#existingConversationNavSpan').click(function () {
-    $(".conItem").remove();
+$('#allCon').click(function () {
     getAllConversations();
 })
+
+function getAllConversations() {
+    // $(".conItem").remove();
+    CHAT.server.getAllConversations();
+}
+
+
+CHAT.client.allConversationsAdded = function () {
+    displayConversations();
+}
+
+
+//Generate list of conversations on side bar
+$(function () {
+    CHAT.client.AddExistingConversation = function (c) {
+        var con = new Conversation(c);
+        ALLCONVERSATIONS.push(con);
+    }
+})
+
+function testPrint() {
+    console.log("All the Con ID's");
+    for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
+        
+        console.log(ALLCONVERSATIONS[i].conversationID);
+    }
+}
+
+$('#print-id').click(function () {
+    testPrint();
+})
+
+function displayConversations() {
+   // $("#conversation-header").empty();
+    for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
+        var html = '<div class="conversation btn" id="' + ALLCONVERSATIONS[i].conversationID+'"><div class="media-body">' +
+            '<h5 class="media-heading">' + ALLCONVERSATIONS[i].name + '</h5>' +
+            '<small class="pull-left time">' + ALLCONVERSATIONS[i].lastMessage + '<br/></small>' +
+            '<small class="pull-left time">' + ALLCONVERSATIONS[i].lastEdited + '<br/></small></div ></div >';
+        $('#conversation-header').append(html);
+    }
+}
+
+
+$('#conversation-header').on('click','div',function (event) {
+    var conId = $(this).attr('id');
+    //var conName = $(this).attr('data-address');
+    var conName = "test";
+    console.log("conID is " + conId);
+    if (typeof conId !== "undefined")
+    {
+        accessConversation(conId, conName);
+    }
+})
+
+//this can be used whether or not the conversation has already been loaded..
+function setDisplayForConversation(conId) {
+    //set conversationId for any new messages. 
+    LIVECONVERSATIONID = conId;
+    ONSCREENCONVERSATION = conId
+    //reset notifications since user has accessed sideNav
+    //$('#newMessageNotificationSpan').text("Notifications:");
+    $('#discussion').empty();
+    $('#conversation-heading').text("");
+    if (CONVERSATIONNAME !== null) {
+        $('#conversation-heading').text(CONVERSATIONNAME); //MIGHT NOT WORK
+    }
+    else {
+        var name = getConversationName(conId);
+
+        if (name !== null) {
+            $('#conversation-heading').text(name);
+        }
+    }
+}
+
+function loadConversationFromServer(conId) {
+    CHAT.server.openConversation(conId);
+}
+
+
+function accessConversation(conID, conName) {
+    var loaded = checkIfLoaded(conID);
+    if (loaded == true) {
+        setDisplayForConversation(conID);
+        displayCachedConversation(conID)
+        console.log("loaded boolean is true");
+    }
+    else {
+        setDisplayForConversation(conID);
+        loadConversationFromServer(conID);
+        console.log("loaded boolean is false");
+    }
+}
+
+
+function displayCachedConversation(conversationID) {
+    //makeConvDivVisible();
+    setDisplayForConversation(conversationID);
+    var allMessages = returnConversationMessages(conversationID);
+    for (var i = 0; i < allMessages.length; i++) {
+        // Add the message to the page.
+        $('#discussion').append('<div class="msg"><div class="media-body" >' +
+            '<small class="pull-right time"><i class="fa fa-clock-o"></i>' + htmlEncode(allMessages[i].sent)+'</small>'+
+            '<h5 class="media-heading">' + htmlEncode(allMessages[i].sender)+'</h5>'+
+            '<small class="col-sm-11">' + htmlEncode(allMessages[i].content)+'</small></div ></div >');
+    }
+}
+
+
+CHAT.client.finishedLoadingConversation = function (conversationID) {
+    setLoadedStatusTrue(conversationID);
+    displayCachedConversation(conversationID);
+}
 
 /*
 Displaying Conversations
@@ -179,14 +299,6 @@ CHAT.client.returnConversationDetails = function (conID) {
     LIVECONVERSATIONID = conID;
     //maybe set ONSCREENCONVERSATION here as well?
 }
-
-$('#mySideNav').on('click', 'a', function (event) {
-    var conId = $(this).attr('id');
-    var conName = $(this).attr('data-address');
-    accessConversation(conId, conName);
-})
-
-
 
 
 function checkIfLoaded(conID) {
@@ -257,36 +369,10 @@ function setLoadedStatusTrue(conversationID) {
     console.log("set loaded status true");
     for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
         if (ALLCONVERSATIONS[i].conversationID == conversationID) {
-            console.log("con loaded = true in 'setLoadedStatusTrue' method");
             ALLCONVERSATIONS[i].loaded = true;
         }
     }
 }
-
-CHAT.client.finishedLoadingConversation = function (conversationID) {
-    setLoadedStatusTrue(conversationID);
-    displayCachedConversation(conversationID);
-}
-
-
-
-function displayConversations() {
-    $(".conItem").remove();
-    for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
-        var html = '<div class="conitembox"><a href="javascript:void(0)" class="conItem" id="' + ALLCONVERSATIONS[i].conversationID + '", data-address="' + ALLCONVERSATIONS[i].name + '">' + ALLCONVERSATIONS[i].name + '</a><br/>' +
-            '<p class="condetails"><strong>' + ALLCONVERSATIONS[i].lastMessage + '</strong></br> ' + ALLCONVERSATIONS[i].lastEdited + '</p><br/></div>';
-        $('#mySideNav').append(html);
-    }
-}
-
-//Generate list of conversations on side bar
-$(function () {
-    CHAT.client.AddExistingConversation = function (c) {
-        var con = new Conversation(c);
-        ALLCONVERSATIONS.push(con);
-    }
-})
-
 
 function addMessageToConversation(message, user, conversationID) {
     var cacheMessage = new Message(message, user, conversationID);
@@ -298,13 +384,29 @@ function addMessageToConversation(message, user, conversationID) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 Displaying Contacts, Starting New Conversation
 */
-$('#newConversationNavSpan').click(function () {
+$('#new-conversation').click(function () {
     //initialise recipients
     RECIPIENTS = [];
-    $(".contactItem").remove();
+    //$(".contact btn").remove();
     $('#contact-block').text("");
     if (ALLCONTACTS.length < 1) {
         CHAT.server.getContacts();
@@ -324,17 +426,20 @@ CHAT.client.ShowContacts = function () {
 }
 
 function displayContacts() {
-    $(".contactItem").remove();
+    $("#contact-panel").empty();
     for (var i = 0; i < ALLCONTACTS.length; i++) {
-        html = '<a href="javascript:void(0)" class="contactItem" id=' + ALLCONTACTS[i].userID + '>' + ALLCONTACTS[i].userID + '<br/></a>';
-        $('#newConversationSideNav').append(html);
+        var html = '<div class="contact btn" id="' + ALLCONTACTS[i].userID + '">' +
+            '<div class="media-body">' +
+            '<h5 class="media-heading">' + ALLCONTACTS[i].userID + '</h5>' +
+            '</div></div>';
+        $('#contact-panel').append(html);
     }
 }
 
 //Gets contactId from nav side bar
-$('#newConversationSideNav').on('click', 'a', function (event) {
+$('#contact-panel').on('click', 'div', function (event) {
     var contactId = $(this).attr('id');
-    console.log(contactId);
+    console.log("contact id is " +contactId);
     if (contactId !== undefined) {
         $('#contact-block').append(contactId + " ")
         RECIPIENTS.push(contactId);
@@ -356,7 +461,7 @@ $('#startNewButton').click(function () {
 })
 
 $(function () {
-    $('#sendmessage').click(function () {
+    $('#send-message').click(function () {
         var message = $('#message').val();
         if (message.length > 0 && LIVECONVERSATIONID === null) {
             CHAT.server.sendFirstMessage(message, RECIPIENTS, CONVERSATIONNAME);
@@ -372,10 +477,7 @@ $(function () {
     })
 })
 
-/////////
-CHAT.client.allConversationsAdded = function () {
-    displayConversations();
-}
+
 
 
 //Add new sent message to page
@@ -466,16 +568,7 @@ function getConversationName(conversationID) {
 }
 
 
-function displayCachedConversation(conversationID) {
-    makeConvDivVisible();
-    setDisplayForConversation(conversationID);
-    var allMessages = returnConversationMessages(conversationID);
-    for (var i = 0; i < allMessages.length; i++) {
-        // Add the message to the page.
-        $('#discussion').append('<li class="chatItem"><strong>' + htmlEncode(allMessages[i].sender)
-            + '</strong>: ' + htmlEncode(allMessages[i].content) + '</li></br>');
-    }
-}
+
 
 
 function addNewMessageToConversation(message, user, conversationID) {
@@ -490,42 +583,3 @@ function addNewMessageToConversation(message, user, conversationID) {
     return cacheMessage;
 }
 
-//this can be used whether or not the conversation has already been loaded..
-function setDisplayForConversation(conId) {
-    //set conversationId for any new messages. 
-    LIVECONVERSATIONID = conId;
-    ONSCREENCONVERSATION = conId
-    //reset notifications since user has accessed sideNav
-    $('#newMessageNotificationSpan').text("Notifications:");
-    $('#discussion').empty();
-    $('#conversationHeading').text("");
-    if (CONVERSATIONNAME !== null) {
-        $('#conversationHeading').text(CONVERSATIONNAME);
-    }
-    else {
-        var name = getConversationName(conId);
-
-        if (name !== null) {
-            $('#conversationHeading').text(name);
-        }
-    }
-}
-
-function loadConversationFromServer(conId) {
-    CHAT.server.openConversation(conId);
-}
-
-
-function accessConversation(conID, conName) {
-    var loaded = checkIfLoaded(conID);
-    if (loaded == true) {
-        setDisplayForConversation(conID);
-        displayCachedConversation(conID)
-        console.log("loaded boolean is true");
-    }
-    else {
-        setDisplayForConversation(conID);
-        loadConversationFromServer(conID);
-        console.log("loaded boolean is false");
-    }
-}
