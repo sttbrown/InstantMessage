@@ -55,7 +55,7 @@ function closeNewConversationNav() {
 /*
 Global Variables (Should be encapsulated in functions?)
 */
-var RECIPIENTS = [];
+var RECIPIENTS = new Set();
 var LIVECONVERSATIONID = null;
 var CONVERSATIONNAME = null;
 var CONNECTED = false;
@@ -210,7 +210,7 @@ $('#print-id').click(function () {
 })
 
 function displayConversations() {
-   // $("#conversation-header").empty();
+    $("#conversation-header").empty();
     for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
         var html = '<div class="conversation btn" id="' + ALLCONVERSATIONS[i].conversationID+'"><div class="media-body">' +
             '<h5 class="media-heading">' + ALLCONVERSATIONS[i].name + '</h5>' +
@@ -240,9 +240,9 @@ function setDisplayForConversation(conId) {
     //reset notifications since user has accessed sideNav
     //$('#newMessageNotificationSpan').text("Notifications:");
     $('#discussion').empty();
-    $('#conversation-heading').text("");
+    $('#con-title-bar').text("");
     if (CONVERSATIONNAME !== null) {
-        $('#conversation-heading').text(CONVERSATIONNAME); //MIGHT NOT WORK
+        $('#con-title-bar').text(CONVERSATIONNAME); //MIGHT NOT WORK
     }
     else {
         var name = getConversationName(conId);
@@ -405,7 +405,7 @@ Displaying Contacts, Starting New Conversation
 */
 $('#new-conversation').click(function () {
     //initialise recipients
-    RECIPIENTS = [];
+    RECIPIENTS = new Set();
     //$(".contact btn").remove();
     $('#contact-block').text("");
     if (ALLCONTACTS.length < 1) {
@@ -438,36 +438,65 @@ function displayContacts() {
 
 //Gets contactId from nav side bar
 $('#contact-panel').on('click', 'div', function (event) {
+    $('#discussion').empty();
     var contactId = $(this).attr('id');
     console.log("contact id is " +contactId);
-    if (contactId !== undefined) {
-        $('#contact-block').append(contactId + " ")
-        RECIPIENTS.push(contactId);
-    }
-    if (RECIPIENTS.length == 2) {
-        $('#myModal').modal('show');
+    if (typeof contactId !== "undefined")
+    {
+        RECIPIENTS.add(contactId);
+
+        if (RECIPIENTS.size < 2)
+        {
+            $('#con-title-bar').text(contactId + " ")
+        }
+        
+
+        if (RECIPIENTS.size == 2)
+        {
+            $('#con-title-bar').text(" ");
+            $('#myModal').modal('show');
+        }
+
+        if (RECIPIENTS.size > 2)
+        {
+            $('#con-title-bar').text(CONVERSATIONNAME + ' (' + displayRecipients() + ')');
+
+        }
     }
 })
 
 $("#conNameButton").click(function () {
+    $('#con-title-bar').text(" ");
     CONVERSATIONNAME = $('#conName').val();
+    $('#con-title-bar').text(CONVERSATIONNAME + ' (' + displayRecipients() + ')');
+
 })
 
+function displayRecipients() {
+    var recipients = "";
+    RECIPIENTS.forEach(function (value) {
+        recipients += value + ", ";   
+    });
+    return recipients;
+}
 
-$('#startNewButton').click(function () {
-    var conId = null; //undefined
-    setDisplayForConversation(conId);
-    closeNewConversationNav();
-})
+
+//$('#startNewButton').click(function () {
+//    var conId = null; //undefined
+//    setDisplayForConversation(conId);
+//   // closeNewConversationNav();
+//})
 
 $(function () {
     $('#send-message').click(function () {
         var message = $('#message').val();
         if (message.length > 0 && LIVECONVERSATIONID === null) {
-            CHAT.server.sendFirstMessage(message, RECIPIENTS, CONVERSATIONNAME);
+          //  var recipientArray = [];
+            recipientArray = Array.from(RECIPIENTS);
+            CHAT.server.sendFirstMessage(message, recipientArray, CONVERSATIONNAME);
             // Clear text box and reset focus for next message.
             $('#message').val('').focus();
-            RECIPIENTS = [];
+            RECIPIENTS = new Set();
             CONVERSATIONNAME = null;
         }
         else if (message.length > 0 && LIVECONVERSATIONID !== null) {
