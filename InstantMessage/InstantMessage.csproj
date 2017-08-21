@@ -210,6 +210,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Hubs\ChatHub.cs" />
+    <Compile Include="Hubs\ConnectionMapping.cs" />
     <Compile Include="Hubs\RejoingGroupPipelineModule.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Connection.cs" />

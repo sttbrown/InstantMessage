@@ -5,7 +5,13 @@
 
 <style>
 
-    
+   @@media (min-width: 768px) {
+  .row.equal {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
     #my-row .panel {
         float: none;
         display: table-cell;
@@ -17,6 +23,10 @@
     #discussion {
         border-left: 1px solid #ddd;
         border-right: 1px solid #ddd;
+    }
+
+    #myModal {
+        font-family: 'Open Sans', serif;
     }
 
     .modal-header {
@@ -35,7 +45,7 @@
         padding-top: 5%;
         padding-bottom: 5%;
     }
-    
+
 
     /******************** MAIN WRAPPERS *******************/
     /* Main Window - Boxed style */
@@ -54,6 +64,8 @@
     .section-wrap {
         height: 100%;
         overflow-y: hidden;
+        border-left: 1px solid #ddd;
+        border-right: 1px solid #ddd;
     }
     /* Header Wrapper */
     .header-wrap {
@@ -231,6 +243,7 @@
     }
 
 
+
 </style>
 
 <!--3rd Party Fonts & Icons-->
@@ -262,7 +275,7 @@
     </div>
 </div>
 
-<div id="my-row" class="row">
+<div id="my-row" class="row equal">
     <div class="container fill">
         <div class="row chat-wrap">
             <!-- Contacts & Conversations -->
@@ -272,7 +285,7 @@
                     <!--Header-->
                     <div class="row header-wrap">
                         <div class="chat-header col-sm-12">
-                            <h4>Select a Contact</h4>
+                            <h4>Select Contacts</h4>
                             <div class="header-button">
                                 <a class="btn pull-right" href="#Contacts" id="new-conversation" data-toggle="collapse">
                                     <i class="fa fa-close"></i>
@@ -289,7 +302,7 @@
                     <!--Header-->
                     <div class="row header-wrap">
                         <div class="chat-header col-sm-12">
-                            <h4 id="username"></h4>
+                            <h4 id="username">Not Connected</h4>
                             <div class="header-button">
                                 <a class="btn pull-right" href="#Contacts" data-toggle="collapse">
                                     <i class="fa fa-pencil-square-o fa-lg"></i>
@@ -321,7 +334,7 @@
                     <!--Header-->
                     <div class="row header-wrap">
                         <div class="chat-header col-sm-12" id="conversation-heading">
-                            <h4 id="con-title-bar">Conversation Title</h4>
+                            <h4 id="con-title-bar"></h4>
                             <div class="header-button">
                                 <a class="btn pull-right info-btn">
                                     <i class="fa fa-info-circle fa-lg"></i>
@@ -349,7 +362,7 @@
                     <!--Header-->
                     <div class="row header-wrap">
                         <div class="chat-header col-sm-12">
-                            <h4>Conversation Info</h4>
+                            <h4>Info</h4>
                             <div class="header-button">
                                 <a class="btn pull-right info-btn">
                                     <i class="fa fa-close"></i>
@@ -358,7 +371,7 @@
                         </div>
                     </div>
                     <!--Members-->
-                    <div class="row content-wrap">
+                    <div class="row content-wrap" id="members-panel">
                         <div class="contact">
                             <div class="media-body">
                                 <h5 class="media-heading">Walter White</h5>

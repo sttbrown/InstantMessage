@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using System.Linq;
 
 namespace InstantMessage
 {
@@ -15,6 +16,9 @@ namespace InstantMessage
     [Microsoft.AspNet.SignalR.Authorize]
     public class ChatHub : Hub
     {
+        private readonly static ConnectionMapping<string> _connections =
+            new ConnectionMapping<string>();  //from the microsoft documentation
+
         private DataRepository _Repo = new DataRepository();
         private string AuthenticatedUser;
         private User CurrentUser;
@@ -61,13 +65,18 @@ namespace InstantMessage
         {
             if (Context.User.Identity.IsAuthenticated)
             {
-                //I'm not sure if this is secure?
-                Clients.Caller.UserId = Context.User.Identity.GetUserName();
+               string userName = Context.User.Identity.GetUserName();
+                
+                Clients.Caller.UserId = userName;
+               _connections.Add(userName, Context.ConnectionId); //map connection to userName.
+
                 Clients.Caller.initialized();
                 //empty method "initialized" ensures that client is passed userID to persist state
 
                 PersistStateHelper();
                 InitializeGroups();
+                UpdateLastActive();
+
                 Clients.Caller.updateUser(AuthenticatedUser);
 
 
@@ -81,6 +90,14 @@ namespace InstantMessage
             return base.OnConnected();
         }
 
+        private void UpdateLastActive()
+        {
+           if (CurrentUser != null)
+           {
+                _Repo.UpdateLastActive(CurrentUser);
+           }
+
+        }
 
         public void GetUser()
         {
@@ -118,8 +135,12 @@ namespace InstantMessage
 
                     foreach (Message m in messages)
                     {
-
                         Clients.Caller.loadMessage(m.User.UserID, m, con.ConversationID);
+                    }
+
+                    foreach(User user in con.Users)
+                    {
+                        Clients.Caller.addConversationUser(user, con.ConversationID);
                     }
 
                     //add condition: if loadMessage Invoked Correctly 
@@ -331,16 +352,41 @@ namespace InstantMessage
         }
 
 
-        public override Task OnReconnected()
+    public override Task OnReconnected()
     {
+            string name = Context.User.Identity.Name;
+
+            if (!_connections.GetConnections(name).Contains(Context.ConnectionId))
+            {
+                _connections.Add(name, Context.ConnectionId);
+            }
+
+
             PersistStateHelper();
+            if (CurrentUser != null)
+            {
+                UpdateLastActive();
+            }
+            
             return base.OnReconnected();
     }
 
     public override Task OnDisconnected(bool stopCalled)
     {
-            // delete the association between the current connection and user name.
-            Clients.Caller.UserId = null;
+            //Debug.WriteLine("ON DISCONNECTED METHOD");
+            //PersistStateHelper();
+
+            //if (CurrentUser != null)
+            //{
+            //    Debug.WriteLine("In the Last ACTIVE DISCONNECT ");
+            //    _Repo.UpdateLastActiveDisconnected(CurrentUser);
+            //}
+
+            string disconnectedUser = Context.User.Identity.Name;
+
+            _Repo.UpdateLastActiveDisconnected(disconnectedUser);
+
+            _connections.Remove(disconnectedUser, Context.ConnectionId);
 
             return base.OnDisconnected(stopCalled);
     }

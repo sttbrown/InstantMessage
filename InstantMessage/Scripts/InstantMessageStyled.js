@@ -61,6 +61,7 @@ var CONVERSATIONNAME = null;
 var CONNECTED = false;
 var CHAT = $.connection.chatHub;
 var ONSCREENCONVERSATION = null;
+var USER = null;
 
 var ALLCONTACTS = [];
 var ALLCONVERSATIONS = [];
@@ -74,12 +75,19 @@ function Conversation(con) {
     this.lastEdited = con.LastEdited;
     this.loaded = false;
     this.messages = [];
+    this.users = [];
     this.addMessage = function (message) {
         this.messages.push(message);
-    }
+    };
     this.unpackMessages = function () {
         return this.messages;
-    }
+    };
+    this.addUser = function (user) {
+        this.users.push(user);
+    };
+    this.unpackUsers = function () {
+        return this.users;
+    };
 }
 
 function Message(message, user, conversationID) {
@@ -94,7 +102,8 @@ function Contact(user) {
     this.userID = user.UserID;
     this.userName = user.UserName;
     this.firstName = user.FirstName;
-    this.LastName = user.LastName;
+    this.lastName = user.LastName;
+    this.lastActive = user.LastActive;
 }
 
 
@@ -122,7 +131,7 @@ $.connection.hub.disconnected(function () {
             function () {
                 console.log("success");
                 CONNECTED = true;
-              //  setConnectionStatus();
+                setConnectionStatus();
                
             }).fail(function () {
                 CONNECTED = false;
@@ -154,12 +163,12 @@ Functions Called on Connection/Reconnection
 
 function setConnectionStatus() {
     if (CONNECTED == true) {
-        $("#connectionSpan").text("");
-        $("#connectionSpan").text("Connection Status: Connected!");
+        $("#username").text("");
+        $("#username").text(USER + " (Connected)");
     }
     else if (CONNECTED == false) {
-        $("#connectionSpan").text("");
-        $("#connectionSpan").text("Connection Status: No Connection");
+        $("#username").text("");
+        $("#username").text("No Connection");
     }
 }
 
@@ -168,9 +177,10 @@ function setConnectionStatus() {
 */
 
 CHAT.client.updateUser = function (user) {
-    console.log(user);
+    USER = user
+    console.log(USER);
     //add User variable here
-    $("#username").text(user);
+    $("#username").text(USER);
 }
 
 //generate a list of conversations in side bar upon click
@@ -240,7 +250,7 @@ function setDisplayForConversation(conId) {
     //reset notifications since user has accessed sideNav
     //$('#newMessageNotificationSpan').text("Notifications:");
     $('#discussion').empty();
-    $('#con-title-bar').text("");
+    $('#con-title-bar').text(" ");
     if (CONVERSATIONNAME !== null) {
         $('#con-title-bar').text(CONVERSATIONNAME); //MIGHT NOT WORK
     }
@@ -248,7 +258,8 @@ function setDisplayForConversation(conId) {
         var name = getConversationName(conId);
 
         if (name !== null) {
-            $('#conversation-heading').text(name);
+            $('#con-title-bar').text(name);
+
         }
     }
 }
@@ -276,6 +287,7 @@ function accessConversation(conID, conName) {
 function displayCachedConversation(conversationID) {
     //makeConvDivVisible();
     setDisplayForConversation(conversationID);
+    
     var allMessages = returnConversationMessages(conversationID);
     for (var i = 0; i < allMessages.length; i++) {
         // Add the message to the page.
@@ -284,7 +296,53 @@ function displayCachedConversation(conversationID) {
             '<h5 class="media-heading">' + htmlEncode(allMessages[i].sender)+'</h5>'+
             '<small class="col-sm-11">' + htmlEncode(allMessages[i].content)+'</small></div ></div >');
     }
+
+    displayParticipants(conversationID);
 }
+
+function displayParticipants(conversationID) {
+    $('#members-panel').empty();
+
+    var participants = getParticipants(conversationID);
+
+    for (var i = 0; i < participants.length; i++)
+    {
+      html = '<div class="contact">' +
+        '<div class="media-body" >' +
+        '<h5 class="media-heading">'+participants[i].userID+'</h5>' +
+          '<small class="pull-left time"><i>Last Active: ' + participants[i].lastActive+'</i></small>' +
+            '</div></div>';
+      $('#members-panel').append(html);
+    }
+}
+
+function getParticipants(conversationID) {
+   
+    var participants = [];
+    for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
+        if (ALLCONVERSATIONS[i].conversationID == conversationID) {
+            participants = ALLCONVERSATIONS[i].unpackUsers();
+            return participants;
+        }
+    }
+    return participants;
+}
+
+
+CHAT.client.addConversationUser = function (user, conID) {
+    var contact = new Contact(user);     
+    for (var i = 0; i < ALLCONVERSATIONS.length; i++)
+    {
+        if (ALLCONVERSATIONS[i].conversationID == conID)
+        {
+            ALLCONVERSATIONS[i].addUser(contact);
+        }
+    }
+
+}
+
+
+
 
 
 CHAT.client.finishedLoadingConversation = function (conversationID) {
@@ -439,6 +497,7 @@ function displayContacts() {
 //Gets contactId from nav side bar
 $('#contact-panel').on('click', 'div', function (event) {
     $('#discussion').empty();
+    LIVECONVERSATIONID = null;
     var contactId = $(this).attr('id');
     console.log("contact id is " +contactId);
     if (typeof contactId !== "undefined")
@@ -575,7 +634,6 @@ $(function () {
             else {
                 //do nothing
             }
-
         }
         else if (loaded == false) {
             if (ONSCREENCONVERSATION == conID) {
@@ -595,10 +653,6 @@ function getConversationName(conversationID) {
         }
     }
 }
-
-
-
-
 
 function addNewMessageToConversation(message, user, conversationID) {
     var cacheMessage = new Message(message, user, conversationID);

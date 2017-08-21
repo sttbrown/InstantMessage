@@ -13,7 +13,7 @@ namespace InstantMessage.Models
         {
             Messages = new List<Message>();
             Users = new List<User>();
-            LastEdited = DateTime.Now;
+            LastEdited = DateTime.Now.ToString("g");
         }
 
         //Conversation objects provide a means of grouping together messages
@@ -25,8 +25,10 @@ namespace InstantMessage.Models
         public string LastMessage { get; set; }
 
         //Is this a good idea? seems as though it might be 
+        [Column(TypeName = "VARCHAR")]
+        [StringLength(200)]
         [Index("LastEdited")]
-        public DateTime LastEdited { get; set; }
+        public string LastEdited { get; set; }
         
         [JsonIgnore]
         public virtual ICollection<Message> Messages { get; set; }

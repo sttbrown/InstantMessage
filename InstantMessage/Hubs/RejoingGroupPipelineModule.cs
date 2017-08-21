@@ -20,13 +20,21 @@ namespace InstantMessage
                 List<string> assignedGroups = new List<string>();
                 using (var db = new InstantMessageContext())
                 {
-                    var user = db.Users.Include(u => u.Conversations)
-                        .Single(u => u.UserID == r.User.Identity.Name);
-                    foreach (var item in user.Conversations)
+                    try
                     {
-                        assignedGroups.Add(item.ConversationID.ToString());
-                        Debug.WriteLine(item.ConversationID.ToString());
+                        var user = db.Users.Include(u => u.Conversations)
+                       .Single(u => u.UserID == r.User.Identity.Name);
+                        foreach (var item in user.Conversations)
+                        {
+                            assignedGroups.Add(item.ConversationID.ToString());
+                            Debug.WriteLine(item.ConversationID.ToString());
+                        }
                     }
+                    catch(InvalidProgramException)
+                    {
+                      Debug.WriteLine("Invalid Operation caused by reconnection attempt in GroupPipeline");
+                    }
+                   
                 }
                 return assignedGroups;
             };

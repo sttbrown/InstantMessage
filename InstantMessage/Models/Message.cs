@@ -13,7 +13,7 @@ namespace InstantMessage.Models
 
         public Message() {
 
-            Sent = DateTime.Now;
+            Sent = DateTime.Now.ToString("g");
 
         }
 
@@ -22,7 +22,7 @@ namespace InstantMessage.Models
         [System.ComponentModel.DataAnnotations.Schema.DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int MessageID { get; set; }
         public string Content { get; set; }
-        public DateTime Sent { get; set; }
+        public string Sent { get; set; }
         public Boolean Received { get; set; }
 
         //a message belongs to a single user

@@ -48,6 +48,30 @@ namespace InstantMessage.DAL
             } 
         }
 
+        public void UpdateLastActive(User current)
+        {
+            current.LastActive = "Today";
+            _Context.SaveChanges();
+
+        }
+
+        public void UpdateLastActiveDisconnected(string disconnectedUser)
+        {
+            User leavingUser = getCurrentUser(disconnectedUser);
+
+            Debug.WriteLine("Update Last ACTIVE METHOD");
+
+
+            if (leavingUser != null)
+            {
+                Debug.WriteLine("USER NOT NULL");
+
+                leavingUser.LastActive = DateTime.Now.ToString("g");
+                _Context.SaveChanges();
+            }
+        }
+
+
         public List<Conversation> GetAllConversations(User currentUser)
         {
             var results = _Context.Conversations.Where(c => c.Users.Select(u => u.UserID).Contains(currentUser.UserID));
@@ -88,7 +112,7 @@ namespace InstantMessage.DAL
             m.User = currentUser;
             m.Conversation = con;
 
-            con.LastEdited = DateTime.Now;
+            con.LastEdited = DateTime.Now.ToString("g");
             //perhaps last message and last message sender should be separated at level of models..
             con.LastMessage = ""+currentUser.UserID+": "+ m.Content;
             con.Messages.Add(m);
@@ -178,7 +202,7 @@ namespace InstantMessage.DAL
                 newConversation.Users.Add(u);
             }
 
-            newConversation.LastEdited = DateTime.Now;
+            newConversation.LastEdited = DateTime.Now.ToString("g");
 
             _Context.Conversations.Add(newConversation);
 
