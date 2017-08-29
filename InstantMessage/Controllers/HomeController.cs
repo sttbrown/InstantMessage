@@ -11,6 +11,7 @@ using System.Net;
 namespace InstantMessage.Controllers
 {   
     [RequireHttps]
+    [OutputCache(Location = System.Web.UI.OutputCacheLocation.None, NoStore = true)]
     public class HomeController : Controller
     {
         private DataRepository _repo = new DataRepository();
@@ -56,6 +57,7 @@ namespace InstantMessage.Controllers
         }
 
         [Authorize]
+        [OutputCache(Location = System.Web.UI.OutputCacheLocation.None,NoStore =true)]
         public ActionResult Main()
         {
             return View();

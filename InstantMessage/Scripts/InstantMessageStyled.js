@@ -200,12 +200,14 @@ CHAT.client.allConversationsAdded = function () {
 
 
 //Generate list of conversations on side bar
-$(function () {
+
     CHAT.client.AddExistingConversation = function (c) {
+        console.log("tester");
         var con = new Conversation(c);
+        console.log(con.conversationID + "conid");
         ALLCONVERSATIONS.push(con);
     }
-})
+
 
 function testPrint() {
     console.log("All the Con ID's");
@@ -287,8 +289,8 @@ function accessConversation(conID, conName) {
 function displayCachedConversation(conversationID) {
     //makeConvDivVisible();
     setDisplayForConversation(conversationID);
-    
     var allMessages = returnConversationMessages(conversationID);
+    console.log(allMessages.length+ " displaycachedConversaiton");
     for (var i = 0; i < allMessages.length; i++) {
         // Add the message to the page.
         $('#discussion').append('<div class="msg"><div class="media-body" >' +
@@ -296,7 +298,6 @@ function displayCachedConversation(conversationID) {
             '<h5 class="media-heading">' + htmlEncode(allMessages[i].sender)+'</h5>'+
             '<small class="col-sm-11">' + htmlEncode(allMessages[i].content)+'</small></div ></div >');
     }
-
     displayParticipants(conversationID);
 }
 
@@ -342,9 +343,6 @@ CHAT.client.addConversationUser = function (user, conID) {
 }
 
 
-
-
-
 CHAT.client.finishedLoadingConversation = function (conversationID) {
     setLoadedStatusTrue(conversationID);
     displayCachedConversation(conversationID);
@@ -360,25 +358,31 @@ CHAT.client.returnConversationDetails = function (conID) {
 
 
 function checkIfLoaded(conID) {
+    console.log("checkifloaded");
     for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
         //correct equality??
         if (ALLCONVERSATIONS[i].conversationID == conID) {
+            console.log("ALLCONVERSATIONS[i].conversationID == conID)");
             if (ALLCONVERSATIONS[i].loaded === true) {
+                console.log("loaded is true");
                 return true;
+            }
+            else {
+                return false;
             }
         }
     }
     return false;
 }
 
-$(function () {
+
     CHAT.client.setOnScreenConversation = function (conId) {
         console.log(" CHAT.client.setOnScreenConversation --" + conId);
         ONSCREENCONVERSATION = conId;
         console.log("On screen conversations set = " + ONSCREENCONVERSATION);
 
     }
-})
+
 
 
 // $(function () {
@@ -408,11 +412,10 @@ Loading, Displaying, Sending Messages
 
 
 //load message function
-$(function () {
     CHAT.client.loadMessage = function (user, message, conversationID) {
         addMessageToConversation(message, user, conversationID);
     }
-})
+
 
 function returnConversationMessages(conversationID) {
     for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
@@ -546,7 +549,7 @@ function displayRecipients() {
 //   // closeNewConversationNav();
 //})
 
-$(function () {
+
     $('#send-message').click(function () {
         var message = $('#message').val();
         if (message.length > 0 && LIVECONVERSATIONID === null) {
@@ -563,29 +566,28 @@ $(function () {
             $('#message').val('').focus();
         }
     })
-})
 
 
-
-
-//Add new sent message to page
-CHAT.client.transferMessage = function (message, user, conID) {
-    newMessageHandler(message, user, conID);
-    conversationSort();
-    displayConversations();
-}
-//IS THIS USED ANYMORE>>>>????
-function newMessageHandler(message, user, conID) {
-    var cacheMessage = addNewMessageToConversation(message, user, conID);
-    // Add the message to the page if user has this conversation on screen
-    if (ONSCREENCONVERSATION == cacheMessage.conversationID) {
-        $('#discussion').append('<li class="chatItem"><strong>' + htmlEncode(cacheMessage.sender)
-            + '</strong>: ' + htmlEncode(cacheMessage.content) + '</li>');
-    }
-    else {
-        console.log("client does not have this conversation loaded");
-    }
-}
+////NOT U
+////Add new sent message to page
+//CHAT.client.transferMessage = function (message, user, conID) {
+//    newMessageHandler(message, user, conID);
+//    conversationSort();
+//    displayConversations();
+//}
+////IS THIS USED ANYMORE>>>>????
+//function newMessageHandler(message, user, conID) {
+//    console.log("new message handler");
+//    var cacheMessage = addNewMessageToConversation(message, user, conID);
+//    // Add the message to the page if user has this conversation on screen
+//    if (ONSCREENCONVERSATION == cacheMessage.conversationID) {
+//        $('#discussion').append('<li class="chatItem"><strong>' + htmlEncode(cacheMessage.sender)
+//            + '</strong>: ' + htmlEncode(cacheMessage.content) + '</li>');
+//    }
+//    else {
+//        console.log("client does not have this conversation loaded");
+//    }
+//}
 
 //Part 1, condition 1
 CHAT.client.receiveNewConversation = function (con) {
@@ -598,16 +600,15 @@ CHAT.client.receiveNewConversation = function (con) {
 
 }
 
-$(function () {
+
     CHAT.client.newMessageNotification = function (conId) {
         // html = '<a href="javascript:void(0)" id="' + conId + '" onclick="goToMessage()">click here to view conversation</a><br/>';
         $('#newMessageNotificationSpan').text("You have a new message");
         //do something with this.
 
     }
-})
 
-$(function () {
+
     CHAT.client.updateExistingConversation = function (con) {
         for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
             if (ALLCONVERSATIONS[i].conversationID == con.ConversationID) {
@@ -618,12 +619,12 @@ $(function () {
         conversationSort();
         displayConversations();
     }
-})
 
-$(function () {
+
     CHAT.client.messageHandler = function (message, user, conID) {
+        console.log("in the message handler");
         var loaded = checkIfLoaded(conID);
-
+        console.log("loaded = " + loaded);
         if (loaded == true) {
             console.log("message handler , loaded == true");
             var cacheMessage = addNewMessageToConversation(message, user, conID);
@@ -644,7 +645,6 @@ $(function () {
             }
         }
     }
-})
 
 function getConversationName(conversationID) {
     for (var i = 0; i < ALLCONVERSATIONS.length; i++) {

@@ -25,6 +25,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -202,7 +203,6 @@
     <Compile Include="Controllers\ConversationsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
-    <Compile Include="DAL\DatabaseAccess.cs" />
     <Compile Include="DAL\DataRepository.cs" />
     <Compile Include="DAL\InstantMessageContext.cs" />
     <Compile Include="DAL\MessageInitializer.cs" />
@@ -243,6 +243,7 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
+    <None Include="Properties\PublishProfiles\InstantMessageSB - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
@@ -253,6 +254,13 @@
     <Content Include="Scripts\jquery-3.1.1.slim.js" />
     <Content Include="Scripts\jquery-3.1.1.slim.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery.idle.js" />
+    <Content Include="Scripts\jquery.idle.min.js" />
+    <Content Include="Scripts\Timeout\jquery-idleTimeout-for-testing.js" />
+    <Content Include="Scripts\Timeout\jquery-idleTimeout-iframes.js" />
+    <Content Include="Scripts\Timeout\jquery-idleTimeout-iframes.min.js" />
+    <Content Include="Scripts\Timeout\jquery-idleTimeout.js" />
+    <Content Include="Scripts\Timeout\jquery-idleTimeout.min.js" />
     <Content Include="Scripts\jquery.signalR-2.2.2.js" />
     <Content Include="Scripts\jquery.signalR-2.2.2.min.js" />
     <Content Include="Scripts\jquery.validate.js" />
@@ -313,6 +321,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Scripts\SourceJS\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

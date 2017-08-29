@@ -26,11 +26,18 @@ namespace InstantMessage.DAL
         {
             // User currentUser = _Data.Users.Find(authenticatedUser);
             //InvalidOperationException: There is already an open DataReader associated with this Command which must be closed first.
-
+            try
+            {
                 User currentUser = _Context.Users.Where(u => u.UserID == authenticatedUser)
-               .FirstOrDefault();
+                               .FirstOrDefault();
+                return currentUser;
+            }
+            catch(Exception e)
+            {
+                return null;
+            }
 
-                return currentUser;   
+                   
         }
 
 
@@ -245,7 +252,6 @@ namespace InstantMessage.DAL
 
         public List<Message> getMessages(Conversation con)
         {
-
            // Conversation conInOrder = con.Messages.OrderBy(m => m.Sent);
            //List<Message> messages = conInOrder.Messages.ToList();
           
@@ -255,23 +261,18 @@ namespace InstantMessage.DAL
             return messages;
         }
 
+        //not implemented fully
         public List<Message> Search(string searchFor, User Current)
         {
             //NOT CORRECT::: 
-
             char[] delimiters = { ' ', ',', '.', ':', '\t' };
 
             var searchWords = searchFor.Split(delimiters);
 
             var results = _Context.Messages.Where(r => searchWords.Any(s => r.Content.Contains(s)));
 
-            return results.ToList();
-            
-        }
-
-
-
-            
+            return results.ToList();     
+        }        
             
     }
 }
