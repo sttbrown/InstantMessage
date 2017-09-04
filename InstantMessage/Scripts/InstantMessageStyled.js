@@ -1,59 +1,51 @@
-﻿///Auxillary Functions///
+﻿/*Test functions. 
+*/
 
-//function makeConvDivInvisible() {
-//    var conDiv = document.getElementById('conversation-container');
-//    var content = document.getElementById('conversation-content');
-//    var message = document.getElementById('message-div');
-//    content.style.display = 'none';
-//    message.style.display = 'none';
-//    conDiv.style.display = 'none';
-//}
+//generate a list of conversations in side bar upon click
+$('#allCon').click(function () {
+    getAllConversations();
+})
 
-//function makeConvDivVisible() {
-//    var conDiv = document.getElementById('conversation-container');
-//    var content = document.getElementById('conversation-content');
-//    var message = document.getElementById('message-div');
-//    content.style.display = 'block';
-//    message.style.display = 'block';
-//    conDiv.style.display = 'block';
-//}
+$('#clear-messages').click(function () {
+    $('#discussion').empty();
+})
+
+$('#sort').click(function () {
+    console.log("sorting");
+    conversationSort();
+
+})
+$('#display').click(function () {
+    console.log("display");
+
+    displayConversations();
+})
+
+
+$('#logOffButton').click(function () {
+    CHAT.connection.stop();
+    console.log("CHAT disconnected");
+})
+
+function testPrint() {
+    console.log("All the Con ID's");
+    for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
+
+        console.log(ALLCONVERSATIONS[i].conversationID);
+    }
+}
+
+
+///Auxillary Functions///
+
 
 function htmlEncode(value) {
     var encodedValue = $('<div />').text(value).html();
     return encodedValue;
 }
 
-
-/* Set the width of the side navigation to 250px and the left margin of the page content to 250px */
-//function openNav() {
-//    document.getElementById("mySideNav").style.width = "350px";
-//    document.getElementById("main").style.marginLeft = "350px";
-
-//}
-
-//for development purposes leave nav open on load
-//$(function () {
-//    openNav();
-//})
-
-function openNewConversationNav() {
-    document.getElementById("newConversationSideNav").style.width = "350px";
-    document.getElementById("main").style.marginLeft = "350px";
-}
-
-/*NOT IN USE Set the width of the side navigation to 0 and the left margin of the page content to 0 */
-function closeNav() {
-    document.getElementById("mySideNav").style.width = "0";
-    document.getElementById("main").style.marginLeft = "250px";
-}
-
-function closeNewConversationNav() {
-    document.getElementById("newConversationSideNav").style.width = "0";
-    document.getElementById("main").style.marginLeft = "350px";
-}
-
 /*
-Global Variables (Should be encapsulated in functions?)
+Variables (Should be encapsulated in functions?)
 */
 var RECIPIENTS = new Set();
 var LIVECONVERSATIONID = null;
@@ -62,7 +54,6 @@ var CONNECTED = false;
 var CHAT = $.connection.chatHub;
 var ONSCREENCONVERSATION = null;
 var USER = null;
-
 var ALLCONTACTS = [];
 var ALLCONVERSATIONS = [];
 
@@ -117,6 +108,7 @@ $.connection.hub.start()
         console.log("success");
         CONNECTED = true;
         setConnectionStatus();
+        getAllConversations();
     }).fail(function () {
         CONNECTED = false;
         setConnectionStatus();
@@ -141,25 +133,12 @@ $.connection.hub.disconnected(function () {
     }, 5000); // Restart connection after 5 seconds.
 });
 
-/*Test functions. 
-*/
-
-$('#clear-messages').click(function () {
-    $('#discussion').empty();
-})
 
 
-
-
-$('#logOffButton').click(function () {
-    CHAT.connection.stop();
-    console.log("CHAT disconnected");
-})
 
 /*
 Functions Called on Connection/Reconnection
 */
-
 
 function setConnectionStatus() {
     if (CONNECTED == true) {
@@ -175,56 +154,36 @@ function setConnectionStatus() {
 /*
    Conversation Side Bar
 */
-
 CHAT.client.updateUser = function (user) {
     USER = user
-    console.log(USER);
     //add User variable here
     $("#username").text(USER);
 }
 
-//generate a list of conversations in side bar upon click
-$('#allCon').click(function () {
-    getAllConversations();
-})
 
+//Requests all conversations from the server
 function getAllConversations() {
-    // $(".conItem").remove();
     CHAT.server.getAllConversations();
 }
 
+//Conversation passed from server and added to array
+CHAT.client.AddExistingConversation = function (c) {
+    var con = new Conversation(c);
+    ALLCONVERSATIONS.push(con);
+}
 
+//function called after all conversations received
 CHAT.client.allConversationsAdded = function () {
+    conversationSort();
     displayConversations();
 }
 
 
-//Generate list of conversations on side bar
-
-    CHAT.client.AddExistingConversation = function (c) {
-        console.log("tester");
-        var con = new Conversation(c);
-        console.log(con.conversationID + "conid");
-        ALLCONVERSATIONS.push(con);
-    }
-
-
-function testPrint() {
-    console.log("All the Con ID's");
-    for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
-        
-        console.log(ALLCONVERSATIONS[i].conversationID);
-    }
-}
-
-$('#print-id').click(function () {
-    testPrint();
-})
-
+//all conversations displayed on left panel
 function displayConversations() {
     $("#conversation-header").empty();
     for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
-        var html = '<div class="conversation btn" id="' + ALLCONVERSATIONS[i].conversationID+'"><div class="media-body">' +
+        var html = '<div class="conversation btn" id="' + ALLCONVERSATIONS[i].conversationID + '"><div class="media-body">' +
             '<h5 class="media-heading">' + ALLCONVERSATIONS[i].name + '</h5>' +
             '<small class="pull-left time">' + ALLCONVERSATIONS[i].lastMessage + '<br/></small>' +
             '<small class="pull-left time">' + ALLCONVERSATIONS[i].lastEdited + '<br/></small></div ></div >';
@@ -232,25 +191,20 @@ function displayConversations() {
     }
 }
 
-
+//Gets selected Conversation Id from the sidebar
 $('#conversation-header').on('click','div',function (event) {
     var conId = $(this).attr('id');
-    //var conName = $(this).attr('data-address');
-    var conName = "test";
-    console.log("conID is " + conId);
     if (typeof conId !== "undefined")
     {
-        accessConversation(conId, conName);
+        accessConversation(conId);
     }
 })
 
-//this can be used whether or not the conversation has already been loaded..
+//Ensures that interface configured to display a conversation
 function setDisplayForConversation(conId) {
     //set conversationId for any new messages. 
     LIVECONVERSATIONID = conId;
     ONSCREENCONVERSATION = conId
-    //reset notifications since user has accessed sideNav
-    //$('#newMessageNotificationSpan').text("Notifications:");
     $('#discussion').empty();
     $('#con-title-bar').text(" ");
     if (CONVERSATIONNAME !== null) {
@@ -258,39 +212,34 @@ function setDisplayForConversation(conId) {
     }
     else {
         var name = getConversationName(conId);
-
         if (name !== null) {
             $('#con-title-bar').text(name);
-
         }
     }
 }
 
+//Messages from a conversation requested from server
 function loadConversationFromServer(conId) {
     CHAT.server.openConversation(conId);
 }
 
-
-function accessConversation(conID, conName) {
+//Function checks if a conversation is in cache, if not, request made to server 
+function accessConversation(conID) {
     var loaded = checkIfLoaded(conID);
     if (loaded == true) {
         setDisplayForConversation(conID);
         displayCachedConversation(conID)
-        console.log("loaded boolean is true");
     }
     else {
         setDisplayForConversation(conID);
         loadConversationFromServer(conID);
-        console.log("loaded boolean is false");
     }
 }
 
-
+//displays a conversation from the cache
 function displayCachedConversation(conversationID) {
-    //makeConvDivVisible();
     setDisplayForConversation(conversationID);
     var allMessages = returnConversationMessages(conversationID);
-    console.log(allMessages.length+ " displaycachedConversaiton");
     for (var i = 0; i < allMessages.length; i++) {
         // Add the message to the page.
         $('#discussion').append('<div class="msg"><div class="media-body" >' +
@@ -301,11 +250,10 @@ function displayCachedConversation(conversationID) {
     displayParticipants(conversationID);
 }
 
+//displays all participants in a conversation
 function displayParticipants(conversationID) {
     $('#members-panel').empty();
-
     var participants = getParticipants(conversationID);
-
     for (var i = 0; i < participants.length; i++)
     {
       html = '<div class="contact">' +
@@ -317,8 +265,8 @@ function displayParticipants(conversationID) {
     }
 }
 
-function getParticipants(conversationID) {
-   
+//gets participants from the conversation object in the cache
+function getParticipants(conversationID) { 
     var participants = [];
     for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
         if (ALLCONVERSATIONS[i].conversationID == conversationID) {
@@ -329,7 +277,7 @@ function getParticipants(conversationID) {
     return participants;
 }
 
-
+//Conversation participant passed from server and added to cache
 CHAT.client.addConversationUser = function (user, conID) {
     var contact = new Contact(user);     
     for (var i = 0; i < ALLCONVERSATIONS.length; i++)
@@ -339,35 +287,35 @@ CHAT.client.addConversationUser = function (user, conID) {
             ALLCONVERSATIONS[i].addUser(contact);
         }
     }
-
-}
-
-
-CHAT.client.finishedLoadingConversation = function (conversationID) {
-    setLoadedStatusTrue(conversationID);
-    displayCachedConversation(conversationID);
 }
 
 /*
 Displaying Conversations
 */
-CHAT.client.returnConversationDetails = function (conID) {
-    LIVECONVERSATIONID = conID;
-    //maybe set ONSCREENCONVERSATION here as well?
+
+//Called once a conversation has been loaded to cache
+CHAT.client.finishedLoadingConversation = function (conversationID) {
+    setLoadedStatusTrue(conversationID);
+    displayCachedConversation(conversationID);
 }
 
+//Passes conversation ID from server and configures screen 
+CHAT.client.returnConversationDetails = function (conID) {
+    LIVECONVERSATIONID = conID;
+}
 
+//checks is conversation is in a cache
 function checkIfLoaded(conID) {
-    console.log("checkifloaded");
     for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
         //correct equality??
         if (ALLCONVERSATIONS[i].conversationID == conID) {
-            console.log("ALLCONVERSATIONS[i].conversationID == conID)");
+
             if (ALLCONVERSATIONS[i].loaded === true) {
-                console.log("loaded is true");
+
                 return true;
             }
             else {
+
                 return false;
             }
         }
@@ -375,22 +323,12 @@ function checkIfLoaded(conID) {
     return false;
 }
 
-
-    CHAT.client.setOnScreenConversation = function (conId) {
-        console.log(" CHAT.client.setOnScreenConversation --" + conId);
+//ensures that messages displayed and sent are displayed on screen
+CHAT.client.setOnScreenConversation = function (conId) {
         ONSCREENCONVERSATION = conId;
-        console.log("On screen conversations set = " + ONSCREENCONVERSATION);
-
-    }
+}
 
 
-
-// $(function () {
-//   CHAT.client.updateConversations = function () {
-//     conversationSort();
-//   displayConversations();
-// }
-// })
 //sort Conversations according to Last Edited.
 function conversationSort() {
     ALLCONVERSATIONS.sort(function (a, b) {
@@ -406,17 +344,13 @@ function conversationSort() {
     });
 }
 
-/*
-Loading, Displaying, Sending Messages
-*/
 
-
-//load message function
+//message passed to the client and added to existing conversation
     CHAT.client.loadMessage = function (user, message, conversationID) {
         addMessageToConversation(message, user, conversationID);
     }
 
-
+//Retrieves messages from a conversation to be displayed
 function returnConversationMessages(conversationID) {
     for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
         if (ALLCONVERSATIONS[i].conversationID == conversationID) {
@@ -424,10 +358,8 @@ function returnConversationMessages(conversationID) {
         }
     }
 }
-
+//sets the loaded property of a conversation to be 'true'
 function setLoadedStatusTrue(conversationID) {
-
-    console.log("set loaded status true");
     for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
         if (ALLCONVERSATIONS[i].conversationID == conversationID) {
             ALLCONVERSATIONS[i].loaded = true;
@@ -435,6 +367,7 @@ function setLoadedStatusTrue(conversationID) {
     }
 }
 
+//adds a new message to an existing conversation
 function addMessageToConversation(message, user, conversationID) {
     var cacheMessage = new Message(message, user, conversationID);
     for (var i = 0; i < ALLCONVERSATIONS.length; i++) {
@@ -444,26 +377,10 @@ function addMessageToConversation(message, user, conversationID) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
 Displaying Contacts, Starting New Conversation
 */
+//displays all contact - calls server if required - this does not account for new contacts being added to system!
 $('#new-conversation').click(function () {
     //initialise recipients
     RECIPIENTS = new Set();
@@ -477,15 +394,18 @@ $('#new-conversation').click(function () {
     }
 })
 
+//receives contact from the server and adds to array of contacts
 CHAT.client.passContact = function (user) {
     var contact = new Contact(user);
     ALLCONTACTS.push(contact);
 }
 
+//Server informs client that all contacts have been loaded
 CHAT.client.ShowContacts = function () {
     displayContacts();
 }
 
+//displays all contacts
 function displayContacts() {
     $("#contact-panel").empty();
     for (var i = 0; i < ALLCONTACTS.length; i++) {
@@ -497,7 +417,7 @@ function displayContacts() {
     }
 }
 
-//Gets contactId from nav side bar
+//Gets contactId from nav side bar and adds to the Recipients array
 $('#contact-panel').on('click', 'div', function (event) {
     $('#discussion').empty();
     LIVECONVERSATIONID = null;
@@ -511,7 +431,6 @@ $('#contact-panel').on('click', 'div', function (event) {
         {
             $('#con-title-bar').text(contactId + " ")
         }
-        
 
         if (RECIPIENTS.size == 2)
         {
@@ -526,6 +445,7 @@ $('#contact-panel').on('click', 'div', function (event) {
         }
     }
 })
+
 
 $("#conNameButton").click(function () {
     $('#con-title-bar').text(" ");
@@ -542,24 +462,19 @@ function displayRecipients() {
     return recipients;
 }
 
-
-//$('#startNewButton').click(function () {
-//    var conId = null; //undefined
-//    setDisplayForConversation(conId);
-//   // closeNewConversationNav();
-//})
-
-
     $('#send-message').click(function () {
         var message = $('#message').val();
         if (message.length > 0 && LIVECONVERSATIONID === null) {
           //  var recipientArray = [];
             recipientArray = Array.from(RECIPIENTS);
-            CHAT.server.sendFirstMessage(message, recipientArray, CONVERSATIONNAME);
-            // Clear text box and reset focus for next message.
-            $('#message').val('').focus();
-            RECIPIENTS = new Set();
-            CONVERSATIONNAME = null;
+            if (recipientArray.length > 0)
+            {
+                CHAT.server.sendFirstMessage(message, recipientArray, CONVERSATIONNAME);
+                RECIPIENTS = new Set();
+                CONVERSATIONNAME = null;
+                // Clear text box and reset focus for next message.
+                $('#message').val('').focus();
+            }
         }
         else if (message.length > 0 && LIVECONVERSATIONID !== null) {
             CHAT.server.send(message, LIVECONVERSATIONID);
@@ -567,29 +482,6 @@ function displayRecipients() {
         }
     })
 
-
-////NOT U
-////Add new sent message to page
-//CHAT.client.transferMessage = function (message, user, conID) {
-//    newMessageHandler(message, user, conID);
-//    conversationSort();
-//    displayConversations();
-//}
-////IS THIS USED ANYMORE>>>>????
-//function newMessageHandler(message, user, conID) {
-//    console.log("new message handler");
-//    var cacheMessage = addNewMessageToConversation(message, user, conID);
-//    // Add the message to the page if user has this conversation on screen
-//    if (ONSCREENCONVERSATION == cacheMessage.conversationID) {
-//        $('#discussion').append('<li class="chatItem"><strong>' + htmlEncode(cacheMessage.sender)
-//            + '</strong>: ' + htmlEncode(cacheMessage.content) + '</li>');
-//    }
-//    else {
-//        console.log("client does not have this conversation loaded");
-//    }
-//}
-
-//Part 1, condition 1
 CHAT.client.receiveNewConversation = function (con) {
     var newCon = new Conversation(con);
     CHAT.server.joinGroupRemotely(newCon.conversationID);
@@ -597,14 +489,6 @@ CHAT.client.receiveNewConversation = function (con) {
     // newMessageHandler(message, user, con);
     conversationSort();
     displayConversations();
-
-}
-
-
-    CHAT.client.newMessageNotification = function (conId) {
-        // html = '<a href="javascript:void(0)" id="' + conId + '" onclick="goToMessage()">click here to view conversation</a><br/>';
-        $('#newMessageNotificationSpan').text("You have a new message");
-        //do something with this.
 
     }
 
@@ -660,7 +544,7 @@ function addNewMessageToConversation(message, user, conversationID) {
         if (ALLCONVERSATIONS[i].conversationID == cacheMessage.conversationID) {
             ALLCONVERSATIONS[i].addMessage(cacheMessage);
             // ALLCONVERSATIONS[i].lastMessage = cacheMessage.content;
-            //  ALLCONVERSATIONS[i].lastEdited = cacheMessage.sent;
+            // ALLCONVERSATIONS[i].lastEdited = cacheMessage.sent;
         }
     }
     return cacheMessage;

@@ -9,6 +9,9 @@ using System.Linq;
 
 namespace InstantMessage
 {
+    /// <summary>
+    /// Module checks group membership upon reconnection
+    /// </summary>
     public class RejoingGroupPipelineModule : HubPipelineModule
     {
         public override Func<HubDescriptor, IRequest, IList<string>, IList<string>>

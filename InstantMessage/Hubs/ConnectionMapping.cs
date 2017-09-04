@@ -1,8 +1,13 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace InstantMessage
 {
+    /// <summary>
+    /// Tracks the Current Users and their connection id's (which must be kept private from other users.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class ConnectionMapping<T>
     {
         private readonly Dictionary<T, HashSet<string>> _connections =
@@ -30,6 +35,15 @@ namespace InstantMessage
                 lock (connections)
                 {
                     connections.Add(connectionId);
+                    foreach(var thing in _connections)
+                    {
+                        Debug.WriteLine("CONNECTIONS:  Key = " + thing.Key);
+                        foreach(var value in thing.Value)
+                        {
+                            Debug.WriteLine("value (connectionId)= " + value);
+                        }
+
+                    }
                 }
             }
         }

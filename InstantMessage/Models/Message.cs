@@ -8,13 +8,14 @@ using System.Web.Security;
 
 namespace InstantMessage.Models
 {
+    /// <summary>
+    /// Model object representing a message
+    /// </summary>
     public class Message
     {
-
-        public Message() {
-
+        public Message()
+        {
             Sent = DateTime.Now.ToString("g");
-
         }
 
         //message has a string content, and date/time it was sent.
@@ -25,20 +26,11 @@ namespace InstantMessage.Models
         public string Sent { get; set; }
         public Boolean Received { get; set; }
 
-        //a message belongs to a single user
-        //public string UserID { get; set; }
         [JsonIgnore]
         public virtual User User { get; set; }
 
-        //a message belongs to a single Conversation
-        // public int ConversationID { get; set; } //not necessary?
         [JsonIgnore]
         public virtual Conversation Conversation { get; set; }  
 
     }
-
-    //public class MessageDBContext : DbContext
-    //{
-    //    public DbSet<Message> Messages { get; set; }
-    //}
 }

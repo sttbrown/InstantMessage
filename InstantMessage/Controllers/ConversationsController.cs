@@ -11,6 +11,9 @@ using InstantMessage.Models;
 
 namespace InstantMessage.Controllers
 {
+    /// <summary>
+    /// Conversation Controller - used in development, not in final prototype.
+    /// </summary>
     public class ConversationsController : Controller
     {
         private InstantMessageContext db = new InstantMessageContext();

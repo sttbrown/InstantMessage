@@ -10,6 +10,7 @@ using System.Net;
 
 namespace InstantMessage
 {
+    //prototype class not in use
     public class RealTimeStart
     {
         private User current;

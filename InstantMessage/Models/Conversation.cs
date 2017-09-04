@@ -7,13 +7,16 @@ using System.Data.Entity;
 
 namespace InstantMessage.Models
 {
+    /// <summary>
+    /// Conversations have users, that participate in them and contain Users
+    /// </summary>
     public class Conversation
     {
         public Conversation()
         {
             Messages = new List<Message>();
             Users = new List<User>();
-            LastEdited = DateTime.Now.ToString("g");
+            LastEdited = DateTime.Now.ToString("s"); 
         }
 
         //Conversation objects provide a means of grouping together messages
@@ -24,12 +27,12 @@ namespace InstantMessage.Models
         public string Name { get; set; } //make this optional?
         public string LastMessage { get; set; }
 
-        //Is this a good idea? seems as though it might be 
         [Column(TypeName = "VARCHAR")]
         [StringLength(200)]
         [Index("LastEdited")]
         public string LastEdited { get; set; }
         
+        //allows conversations to be passed as JSON
         [JsonIgnore]
         public virtual ICollection<Message> Messages { get; set; }
 
@@ -37,11 +40,5 @@ namespace InstantMessage.Models
         public virtual ICollection<User> Users { get; set;  }
         
     }
-
-    //public class ConversationDBContext : DbContext
-    //{
-    //    public DbSet<Conversation> Conversations { get; set; }
-    //}
-
 
 }

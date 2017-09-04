@@ -8,15 +8,14 @@ namespace InstantMessage.DAL
     public class InstantMessageContext : DbContext
     {
         //hard codes the connection string?
-        public InstantMessageContext() : base("InstantMessageContext")
+         public InstantMessageContext() : base("InstantMessageContext")
+        //public InstantMessageContext() : base("AzureMySql")
         {
         }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
-        //public DbSet<Participant> Participants { get; set; }
         public DbSet<Message> Messages { get; set; }
-        public DbSet<Connection> Connections { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

@@ -25,7 +25,11 @@ namespace InstantMessage.Controllers
         {
 
         }
-
+        /// <summary>
+        /// Checks for existing user and creates and saves new user object if required. 
+        /// Passes the messaging functionality to the client
+        /// </summary>
+        /// <returns>Html containing the messaging functionality</returns>
         [Authorize]
         public ActionResult Index()
         {
@@ -38,24 +42,18 @@ namespace InstantMessage.Controllers
             {
                 _repo.createNewUser(current);
 
-                return View("Conversation");
+                return View("Main");
             }
             else
             {
-                //return users conversations. 
-
-                //List<Conversation> conversations = _repo.GetAllConversations(CurrentUser);
-
-                //if (conversations == null)
-                //{
-                //    Console.WriteLine("no conversations available");
-                //    return View("NewUser");
-                //}
-
-                return View("Conversation");
+                return View("Main");
             }
         }
 
+        /// <summary>
+        /// Passes the messaging functionality to the client
+        /// </summary>
+        /// <returns>Main.html</returns>
         [Authorize]
         [OutputCache(Location = System.Web.UI.OutputCacheLocation.None,NoStore =true)]
         public ActionResult Main()
@@ -63,14 +61,20 @@ namespace InstantMessage.Controllers
             return View();
         }
 
-
+        /// <summary>
+        /// earlier prototype GUI
+        /// </summary>
+        /// <returns></returns>
         [Authorize]
         public ActionResult Conversation()
         {
             return View();
         }
 
-
+        /// <summary>
+        /// Test Code
+        /// </summary>
+        /// <returns></returns>
         [Authorize]
         public ActionResult TestHome()
         {
@@ -87,40 +91,11 @@ namespace InstantMessage.Controllers
             }
             else
             {
-                //return users conversations. 
-
-                //List<Conversation> conversations = _repo.GetAllConversations(CurrentUser);
-
-                //if (conversations == null)
-                //{
-                //    Console.WriteLine("no conversations available");
-                //    return View("NewUser");
-                //}
-
                 return View();
             }
         }
 
         
-
-        [Authorize]
-        public ActionResult CreateConversation()
-        {
-            //All Users ,  way of selecting user - should this bring up modal or new page Post Datas?
-            //Have a selected user , Create new conversation, add user into many-to-many table.
-            //messages all allocated conversation ID 
-
-           List<User> contacts= _repo.GetAllContacts(AuthenticatedUser);
-
-            return View(contacts);
-        }
-
-
-     
-
-
-        
-
         public ActionResult About()
         {
             ViewBag.Message = "Your application description page.";
