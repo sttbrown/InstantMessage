@@ -9,12 +9,20 @@ The task was to build an instant messaging application using C#/.NET, which made
 Technologies Used:
 
 C#
+
 .NET MVC
+
 SignalR
+
 Entity Framework 6
+
 html
+
 CSS
+
 JavaScript
+
 Jquery
+
 Bootstrap
 
